@@ -1,9 +1,23 @@
 {
         "name": "puffs2d",
         "version": "1.0.0",
-        "description": "Submission for the GDKO Round 1",
+        "description": "Submission for the GDKO 2026 Round 1",
         "author": "PlasmaPuffs",
         "scripts": {
-                "test": "dev"
+                "dev": "vite dev",
+                "build": "vite build",
+                "preview": "vite preview"
+        },
+        "devDependencies": {
+                "typescript": "^5.9.3",
+                "vite": "^7.3.0"
+        },
+        "dependencies": {
+                "@fontsource/monaspace-argon": "^5.2.5",
+                "@fontsource/monaspace-krypton": "^5.2.5",
+                "@fontsource/monaspace-neon": "^5.2.5",
+                "@fontsource/monaspace-radon": "^5.2.5",
+                "@fontsource/monaspace-xenon": "^5.2.5",
+                "tippy.js": "^6.3.7"
         }
 }
