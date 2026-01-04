@@ -98,8 +98,11 @@ export class Character {
 
                 const colorPicker = document.querySelector("#body-color");
                 colorPicker.onColorChange(color => {
-                        const path = this.bodySVG.querySelector("#body");
-                        path.style.fill = color;
+                        const bodyPath = this.bodySVG.querySelector("#body");
+                        bodyPath.style.fill = color;
+
+                        const handPath = this.handSVG.querySelector("#hand");
+                        handPath.style.fill = color;
 
                         if (this.bodyColorLoading) {
                                 this.queuedBodyColor = color;
@@ -275,8 +278,9 @@ export class Character {
         }
 
         async refreshBodyImage(color) {
-                this.bodyColorLoading = true;
+                this.bodyColorLoading = true; // TODO: Use promise.all to convert both simutaneously
                 this.bodyImage = await convertSVG(this.bodySVG);
+                this.handImage = await convertSVG(this.handSVG);
                 this.bodyColorLoading = false;
 
                 if (this.queuedBodyColor !== null && this.queuedBodyColor !== color) {
