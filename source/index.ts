@@ -1,25 +1,68 @@
-const Step = Object.freeze({
-        GENERAL: "general",
-        APPEARANCE: "appearance",
-        ACCESSORIES: "accessories",
-        ATTACKS: "attacks",
-        PERSONALITY: "personality",
-        EFFECTS: "effects",
-        REVIEW: "review"
+import "@fontsource/monaspace-neon";
+import "@fontsource/monaspace-argon";
+import "@fontsource/monaspace-radon";
+import "./styles/styles.css";
+
+import Starfield from "./vendor/starfield.js/starfield.js";
+
+Starfield.setup({
+        auto: false,
+        starColor: "rgb(255, 255, 255)",
+        canvasColor: "rgb(20, 10, 30)",
+        hueJitter: 0,
+        trailLength: 0.75,
+        baseSpeed: 2.5,
+        maxAcceleration: 5,
+        accelerationRate: 0.05,
+        decelerationRate: 0.05,
+        minSpawnRadius: 100,
+        maxSpawnRadius: 500
 });
 
-const stepOrder = [
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
+import "tippy.js/dist/svg-arrow.css";
+import "tippy.js/animations/scale.css";
+
+tippy("[data-tippy-content]", {
+        animation: "scale",
+        onShow(instance) {
+                if (instance.reference.classList.contains("locked")) {
+                        return false;
+                }
+        }
+});
+
+import { setupDropdowns, setupColorPickers } from "./elements";
+import { Canvas2D } from "./canvas";
+
+setupDropdowns();
+setupColorPickers();
+
+const canvas = new Canvas2D();
+await canvas.load();
+
+enum Step {
+        GENERAL = "general",
+        APPEARANCE = "appearance",
+        ACCESSORIES = "accessories",
+        ATTACKS = "attacks",
+        EFFECTS = "effects",
+        REVIEW = "review"
+}
+
+const stepOrder = Object.freeze([
         Step.GENERAL,
         Step.APPEARANCE,
         Step.ACCESSORIES,
         Step.ATTACKS,
         Step.EFFECTS,
         Step.REVIEW
-];
+] as const);
 
 let currentStep = undefined;
 
-function presentStep(step) {
+function presentStep(step: Step) {
         if (currentStep !== undefined) {
                 const icon = document.querySelector(`#${currentStep}-icon`);
                 icon.classList.remove("active");
@@ -33,9 +76,9 @@ function presentStep(step) {
         currentStep = step;
 }
 
-function moveTrackTo(step, animate) {
-        const scroller = document.querySelector("#scroller");
-        const track = document.querySelector("#track");
+function moveTrackTo(step: Step, animate: boolean) {
+        const scroller = document.querySelector<HTMLDivElement>("#scroller");
+        const track = document.querySelector<HTMLDivElement>("#track");
 
         const targetIndex = stepOrder.indexOf(step);
 
@@ -66,12 +109,11 @@ window.addEventListener("resize", () => {
         moveTrackTo(currentStep, false);
 })
 
-const proceedButtons = document.querySelectorAll(".proceed");
-for (const proceedButton of proceedButtons) {
+document.querySelectorAll<HTMLButtonElement>("button.proceed").forEach(proceedButton => {
         const content = proceedButton.closest(".step");
         const step = content.id.split("-")[0];
 
-        let nextStep;
+        let nextStep: Step;
         switch (step) {
                 case Step.GENERAL:
                         nextStep = Step.APPEARANCE;
@@ -96,11 +138,15 @@ for (const proceedButton of proceedButtons) {
         proceedButton.addEventListener("click", () => {
                 presentStep(nextStep);
         });
-}
+});
 
-const stepper = document.querySelector("#stepper");
-for (const child of stepper.children) {
-        const step = child.id.split("-")[0];
+const stepper = document.querySelector<HTMLOListElement>("#stepper");
+stepper.childNodes.forEach(child => {
+        if (!(child instanceof HTMLLIElement)) {
+                return;
+        }
+
+        const step = child.id.split("-")[0] as Step;
         child.addEventListener("click", () => {
                 if (child.classList.contains("locked") || child.classList.contains("active")) {
                         return;
@@ -108,7 +154,7 @@ for (const child of stepper.children) {
 
                 presentStep(step);
         });
-}
+});
 
 export function start() {
         presentStep(Step.GENERAL);

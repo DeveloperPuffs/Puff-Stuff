@@ -3,7 +3,15 @@
                 "allowJs": true,
                 "checkJs": false,
                 "noEmit": true,
-                "strict": false
+                "strict": false,
+                "moduleResolution": "bundler",
+                "module": "esnext",
+                "target": "esnext",
+                "lib": [
+                        "DOM",
+                        "DOM.Iterable",
+                        "ESNext"
+                ]
         },
         "include": [
                 "source"

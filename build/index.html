@@ -4,34 +4,34 @@
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-          <script type="module" crossorigin src="./assets/index-CcZtHL6Z.js"></script>
-          <link rel="stylesheet" crossorigin href="./assets/index-DERN5NBs.css">
+          <script type="module" crossorigin src="./assets/index-DuAgJWHj.js"></script>
+          <link rel="stylesheet" crossorigin href="./assets/index-DNKriyYJ.css">
         </head>
         <body>
                 <div id="starfield" class="starfield"></div>
                 <main class="editing">
                         <div id="editor">
-                                <div id="stepper">
+                                <ol id="stepper">
                                         <!-- TODO: Controls step? -->
-                                        <div id="general-icon" class="locked icon" data-tippy-content="General Information">
+                                        <li id="general-icon" class="locked icon" data-tippy-content="General Information">
                                                 <i class="fa-solid fa-info"></i>
-                                        </div>
-                                        <div id="appearance-icon" class="locked icon" data-tippy-content="Appearance">
+                                        </li>
+                                        <li id="appearance-icon" class="locked icon" data-tippy-content="Appearance">
                                                 <i class="fa-solid fa-face-smile"></i>
-                                        </div>
-                                        <div id="accessories-icon" class="locked icon" data-tippy-content="Accessories">
+                                        </li>
+                                        <li id="accessories-icon" class="locked icon" data-tippy-content="Accessories">
                                                 <i class="fa-solid fa-masks-theater"></i>
-                                        </div>
-                                        <div id="attacks-icon" class="locked icon" data-tippy-content="Attacks">
+                                        </li>
+                                        <li id="attacks-icon" class="locked icon" data-tippy-content="Attacks">
                                                 <i class="fa-solid fa-hand-fist"></i>
-                                        </div>
-                                        <div id="effects-icon" class="locked icon" data-tippy-content="Effects">
+                                        </li>
+                                        <li id="effects-icon" class="locked icon" data-tippy-content="Effects">
                                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
-                                        </div>
-                                        <div id="review-icon" class="locked icon" data-tippy-content="Review">
+                                        </li>
+                                        <li id="review-icon" class="locked icon" data-tippy-content="Review">
                                                 <i class="fa-solid fa-check"></i>
-                                        </div>
-                                </div>
+                                        </li>
+                                </ol>
                                 <div id="scroller">
                                         <div id="track">
                                                 <div id="general-content" class="step">
@@ -92,12 +92,7 @@
                                                                                 <button style="--color: #C6B7E2;"></button>
                                                                                 <button style="--color: #6FB7B1;"></button>
                                                                         </div>
-                                                                        <div class="components">
-                                                                                <label>Red</label><input type="range"><span></span>
-                                                                                <label>Green</label><input type="range"><span></span>
-                                                                                <label>Blue</label><input type="range"><span></span>
-                                                                                <label>Alpha</label><input type="range"><span></span>
-                                                                        </div>
+                                                                        <div class="sliders" data-format="rgba"></div>
                                                                 </div>
                                                                 <span>TODO: More options...</span><br>
                                                                 <button class="proceed">Proceed</button>

@@ -105,6 +105,8 @@ main.editing > #editor {
 }
 
 #stepper {
+        list-style: none;
+        padding-inline-start: 0;
         flex: 0 0 auto;
         display: flex;
         margin-bottom: var(--medium-spacing);
@@ -332,13 +334,17 @@ main.editing > #canvas {
         margin: 0;
 }
 
-.color-picker > .components {
+.color-picker > .sliders {
         display: grid;
         grid-template-columns: max-content 1fr max-content;
         column-gap: var(--small-spacing);
         align-items: center;
 }
 
-.color-picker > .components > input[type="range"] {
+.color-picker > .sliders > input[type="range"] {
         margin: 0;
+}
+
+.color-picker > .sliders > span {
+        white-space-collapse: preserve;
 }
