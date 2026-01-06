@@ -27,7 +27,7 @@ export class Outliner {
                 this.canvas.width = 1000;
                 this.canvas.height = 1000;
 
-                this.context = this.canvas.getContext("2d");
+                this.context = this.canvas.getContext("2d")!;
         }
 
         process(width: number, height: number, color: string, thickness: number, callback: RenderingCallback) {

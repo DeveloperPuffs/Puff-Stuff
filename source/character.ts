@@ -3,6 +3,7 @@ import { ColorPickerElement } from "./elements";
 import { Vector2D, Rectangle2D } from "./math";
 import { Entity2D } from "./physics";
 import { Canvas2D } from "./canvas";
+
 enum Direction {
         LEFT,
         RIGHT
@@ -25,7 +26,7 @@ export class Character extends Entity2D {
         private outlineColor: string;
         private outlineThickness: number;
 
-        private keys: Object;
+        private keys: Record<string, boolean>;
         private name: string;
 
         private body: TextureSVG;
@@ -48,7 +49,6 @@ export class Character extends Entity2D {
                 });
 
                 this.keys = {};
-
                 window.addEventListener("keydown", event => {
                         const element = document.activeElement;
                         if (element instanceof HTMLElement) {
@@ -73,7 +73,7 @@ export class Character extends Entity2D {
                 });
 
                 this.name = "";
-                const nameInput = document.querySelector<HTMLInputElement>("#name-input");
+                const nameInput = document.querySelector<HTMLInputElement>("#name-input")!;
                 nameInput.addEventListener("input", () => {
                         this.name = nameInput.value;
                 });
@@ -85,7 +85,7 @@ export class Character extends Entity2D {
 
                 this.outlineColor = "#FFFFFF";
 
-                const outlineThicknessSlider = document.querySelector<HTMLInputElement>("#outline-thickness");
+                const outlineThicknessSlider = document.querySelector<HTMLInputElement>("#outline-thickness")!;
                 this.outlineThickness = Number.parseFloat(outlineThicknessSlider.value);
                 outlineThicknessSlider.addEventListener("input", () => {
                         this.outlineThickness = Number.parseFloat(outlineThicknessSlider.value);
@@ -132,17 +132,17 @@ export class Character extends Entity2D {
                         this.hand.load()
                 ]);
 
-                document.querySelector<ColorPickerElement>("#body-color").onColorChange(color => {
-                        const bodyPath = this.body.svg.querySelector<SVGClipPathElement>("#body");
+                document.querySelector<ColorPickerElement>("#body-color")!.onColorChange(color => {
+                        const bodyPath = this.body.svg!.querySelector<SVGClipPathElement>("#body")!;
                         bodyPath.style.fill = color;
                         this.body.rasterize();
 
-                        const handPath = this.hand.svg.querySelector<SVGClipPathElement>("#hand");
+                        const handPath = this.hand.svg!.querySelector<SVGClipPathElement>("#hand")!;
                         handPath.style.fill = color;
                         this.hand.rasterize();
                 });
 
-                document.querySelector<ColorPickerElement>("#outline-color").onColorChange(color => {
+                document.querySelector<ColorPickerElement>("#outline-color")!.onColorChange(color => {
                         this.outlineColor = color;
                 });
         }
@@ -216,7 +216,7 @@ export class Character extends Entity2D {
                                 context.translate(shoulderOffsetX_left, shoulderOffsetY); // Origin is at shoulder
 
                                 context.drawImage(
-                                        this.hand.image,
+                                        this.hand.image!,
                                         handShoulderDistance * Math.cos(armAngle_left + Math.PI / 2),
                                         handShoulderDistance * Math.sin(armAngle_left + Math.PI / 2),
                                         handWidth,
@@ -231,7 +231,7 @@ export class Character extends Entity2D {
                                 context.translate(shoulderOffsetX_right, shoulderOffsetY); // Origin is at shoulder
 
                                 context.drawImage(
-                                        this.hand.image,
+                                        this.hand.image!,
                                         handShoulderDistance * Math.cos(armAngle_right + Math.PI / 2),
                                         handShoulderDistance * Math.sin(armAngle_right + Math.PI / 2),
                                         handWidth,
@@ -248,7 +248,7 @@ export class Character extends Entity2D {
                         }
 
                         context.drawImage(
-                                this.body.image,
+                                this.body.image!,
                                 -this.sprite.w / 2,
                                 -this.sprite.h / 2,
                                 this.sprite.w,
@@ -262,7 +262,7 @@ export class Character extends Entity2D {
                         const eyesHeight = this.eyesScale * this.sprite.h / 2;
 
                         context.drawImage(
-                                this.eyes.image,
+                                this.eyes.image!,
                                 -eyesWidth / 2 + lookX,
                                 -eyesHeight / 2 + lookY - this.sprite.h / 4,
                                 eyesWidth,
@@ -270,7 +270,7 @@ export class Character extends Entity2D {
                         );
 
                         context.drawImage(
-                                this.mouth.image,
+                                this.mouth.image!,
                                 -this.sprite.w / 2 + lookX,
                                 -this.sprite.h / 2 + lookY,
                                 this.sprite.w,

@@ -18,8 +18,8 @@ export class Canvas2D {
         private currentTime: number;
 
         constructor() {
-                this.element = document.querySelector<HTMLCanvasElement>("#canvas");
-                this.context = this.element.getContext("2d");
+                this.element = document.querySelector<HTMLCanvasElement>("#canvas")!;
+                this.context = this.element.getContext("2d")!;
 
                 const resizeObserver = new ResizeObserver(entries => {
                         for (const entry of entries) {

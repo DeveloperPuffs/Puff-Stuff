@@ -39,6 +39,10 @@ import { Canvas2D } from "./canvas";
 setupDropdowns();
 setupColorPickers();
 
+window.addEventListener("contextmenu", event => {
+        event.preventDefault();
+});
+
 const canvas = new Canvas2D();
 await canvas.load();
 
@@ -60,15 +64,15 @@ const stepOrder = Object.freeze([
         Step.REVIEW
 ] as const);
 
-let currentStep = undefined;
+let currentStep: Step | undefined = undefined;
 
 function presentStep(step: Step) {
         if (currentStep !== undefined) {
-                const icon = document.querySelector(`#${currentStep}-icon`);
+                const icon = document.querySelector<HTMLLIElement>(`#${currentStep}-icon`)!;
                 icon.classList.remove("active");
         }
 
-        const icon = document.querySelector(`#${step}-icon`);
+        const icon = document.querySelector<HTMLLIElement>(`#${step}-icon`)!;
         icon.classList.remove("locked");
         icon.classList.add("active");
 
@@ -77,8 +81,8 @@ function presentStep(step: Step) {
 }
 
 function moveTrackTo(step: Step, animate: boolean) {
-        const scroller = document.querySelector<HTMLDivElement>("#scroller");
-        const track = document.querySelector<HTMLDivElement>("#track");
+        const scroller = document.querySelector<HTMLDivElement>("#scroller")!;
+        const track = document.querySelector<HTMLDivElement>("#track")!;
 
         const targetIndex = stepOrder.indexOf(step);
 
@@ -110,7 +114,7 @@ window.addEventListener("resize", () => {
 })
 
 document.querySelectorAll<HTMLButtonElement>("button.proceed").forEach(proceedButton => {
-        const content = proceedButton.closest(".step");
+        const content = proceedButton.closest<HTMLDivElement>(".step")!;
         const step = content.id.split("-")[0];
 
         let nextStep: Step;
@@ -140,8 +144,7 @@ document.querySelectorAll<HTMLButtonElement>("button.proceed").forEach(proceedBu
         });
 });
 
-const stepper = document.querySelector<HTMLOListElement>("#stepper");
-stepper.childNodes.forEach(child => {
+document.querySelector<HTMLOListElement>("#stepper")!.childNodes.forEach(child => {
         if (!(child instanceof HTMLLIElement)) {
                 return;
         }
