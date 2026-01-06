@@ -3,7 +3,6 @@ import { ColorPickerElement } from "./elements";
 import { Vector2D, Rectangle2D } from "./math";
 import { Entity2D } from "./physics";
 import { Canvas2D } from "./canvas";
-
 enum Direction {
         LEFT,
         RIGHT
@@ -18,8 +17,8 @@ export class Character extends Entity2D {
         private state: State;
         private direction: Direction;
         private speed: number;
-        private blink: number;
-        private blinking: boolean;
+
+        private eyesScale: number;
 
         private sight: Vector2D;
         private sprite: Rectangle2D;
@@ -92,10 +91,37 @@ export class Character extends Entity2D {
                         this.outlineThickness = Number.parseFloat(outlineThicknessSlider.value);
                 });
 
-                this.blink = 0;
-                this.blinking = false;
-                const animateBlink = () => {
+                this.eyesScale = 1;
+                this.scheduleBlink();
+        }
+
+        scheduleBlink() {
+                const delay = 2000 + Math.random() * 3000; 
+                setTimeout(() => {
+                        this.animateBlink();
+                }, delay);
+        }
+
+        animateBlink() {
+                const duration = 100 + Math.random() * 200;
+                const startTime = performance.now();
+
+                const blinkFrame = (timestamp: number) => {
+                        const elapsed = timestamp - startTime;
+                        if (elapsed > duration) {
+                                this.eyesScale = 1;
+                                this.scheduleBlink();
+                                return;
+                        }
+
+                        this.eyesScale = elapsed < duration / 2
+                                ? 1 - (elapsed * 2 / duration)
+                                : (elapsed * 2 - duration) / duration
+
+                        requestAnimationFrame(blinkFrame);
                 };
+
+                window.requestAnimationFrame(blinkFrame);
         }
 
         async load() {
@@ -116,9 +142,6 @@ export class Character extends Entity2D {
                         this.hand.rasterize();
                 });
 
-                // TODO: Make eyes blink at an inverval
-                // TODO: Options to toggle blinking, control blink interval, speed?
-
                 document.querySelector<ColorPickerElement>("#outline-color").onColorChange(color => {
                         this.outlineColor = color;
                 });
@@ -133,12 +156,6 @@ export class Character extends Entity2D {
                 const horizontal = Number(!!right) - Number(!!left);
                 const vertical = Number(!!down) - Number(!!up);
                 const diagonal = horizontal && vertical ? 1 / Math.sqrt(2) : 1;
-
-                if (horizontal !== 0) {
-                        this.direction = horizontal === 1
-                                ? Direction.RIGHT
-                                : Direction.LEFT;
-                }
 
                 this.acceleration.x = this.speed * horizontal * diagonal;
                 this.acceleration.y = this.speed * vertical * diagonal;
@@ -183,9 +200,15 @@ export class Character extends Entity2D {
                 const armAngle_left = Math.sin((currentTime / 200)) * armAngleRange;
                 const armAngle_right = Math.sin((currentTime / 200) + Math.PI) * armAngleRange;
 
-                // I need to make it bigger to make sure that the entire character sprite fits
+                // I need to make the image big enough to contain the whole character sprite
                 const BUFFER_WIDTH = 100;
                 const BUFFER_HEIGHT = 100;
+
+                const deadzone = this.sprite.w / 2;
+                const distance = this.canvas.cursor.x - this.sprite.x;
+                if (Math.abs(distance) > deadzone) {
+                        this.direction = distance < 0 ? Direction.LEFT : Direction.RIGHT;
+                }
 
                 const outlined = this.canvas.outliner.process(BUFFER_WIDTH, BUFFER_HEIGHT, this.outlineColor, this.outlineThickness, context => {
                         const renderLeftHand = () => {
@@ -232,15 +255,15 @@ export class Character extends Entity2D {
                                 this.sprite.h
                         );
 
-                        const lookX = (this.sight.x - this.canvas.width / 2) / 200;
-                        const lookY = (this.sight.y - this.canvas.height / 2) / 200;
+                        const lookX = (this.sight.x - this.canvas.width / 2) / 100;
+                        const lookY = (this.sight.y - this.canvas.height / 2) / 100;
 
-                        const eyesWidth = this.sprite.w / 1.5;
-                        const eyesHeight = this.sprite.h / 1.5;
+                        const eyesWidth = this.sprite.w / 1.6;
+                        const eyesHeight = this.eyesScale * this.sprite.h / 2;
 
                         context.drawImage(
                                 this.eyes.image,
-                                -eyesWidth / 2 + lookX + (this.direction ? this.sprite.w / 16 : -this.sprite.w / 16),
+                                -eyesWidth / 2 + lookX,
                                 -eyesHeight / 2 + lookY - this.sprite.h / 4,
                                 eyesWidth,
                                 eyesHeight
@@ -248,8 +271,8 @@ export class Character extends Entity2D {
 
                         context.drawImage(
                                 this.mouth.image,
-                                -this.sprite.w / 2 + (this.direction ? this.sprite.w / 16 : -this.sprite.w / 16),
-                                -this.sprite.h / 2,
+                                -this.sprite.w / 2 + lookX,
+                                -this.sprite.h / 2 + lookY,
                                 this.sprite.w,
                                 this.sprite.h
                         );

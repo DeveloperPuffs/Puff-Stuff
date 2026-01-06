@@ -5,6 +5,10 @@ export class Vector2D {
 
         constructor(public x: number, public y: number) {
         }
+
+        copy() {
+                return new Vector2D(this.x, this.y);
+        }
 }
 
 export class Rectangle2D extends Vector2D {
