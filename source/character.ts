@@ -1,5 +1,5 @@
 import { TextureSVG } from "./textures";
-import { ColorPickerElement } from "./elements";
+import { ColorPickerElement } from "./elements/color_picker";
 import { Vector2D, Rectangle2D } from "./math";
 import { Entity2D } from "./physics";
 import { Canvas2D } from "./canvas";
@@ -103,7 +103,7 @@ export class Character extends Entity2D {
                                 this.targetSwingAngle = 180;
                         }
 
-                        this.canvas.camera.shake(2.5);
+                        this.canvas.camera.shake(5);
                 });
 
                 this.naturalScale = new Vector2D(1, 1);
@@ -248,21 +248,19 @@ export class Character extends Entity2D {
                                 const handWidth = this.sprite.w / 3;
                                 const handHeight = this.sprite.h / 3;
 
-                                const shoulderOffsetX = direction === Direction.LEFT
-                                        ? this.sprite.w / 2.5
-                                        : -this.sprite.w / 2.5;
-                                const shoulderOffsetY = this.sprite.h / -4;
-                                const handShoulderDistance = this.sprite.w / 2;
+                                const shoulderOffsetX = direction === Direction.LEFT ? 20 : -20;
+                                const shoulderOffsetY = -10;
+                                const handShoulderDistance = 25;
 
                                 if (this.direction !== direction) {
                                         const swingAngle = direction === Direction.LEFT
                                                 ? this.currentSwingAngle * Math.PI / 180
                                                 : -this.currentSwingAngle * Math.PI / 180;
 
-                                        const swordWidth = this.sprite.w / 2;
-                                        const swordHeight = this.sprite.h;
+                                        const swordWidth = 25 * 1.25;
+                                        const swordHeight = 50 * 1.25;
                                         const swordOffsetX = 0;
-                                        const swordOffsetY = -15;
+                                        const swordOffsetY = -20;
 
                                         const cursorAngle = Math.atan2(
                                                 this.canvas.cursor.y - this.sprite.y,
@@ -372,14 +370,9 @@ export class Character extends Entity2D {
                 this.canvas.context.drawImage(outlined, -BUFFER_WIDTH / 2, -BUFFER_HEIGHT / 2);
 
                 if (this.name !== "") {
-                        let label = this.name;
-                        if (label.length > 20) {
-                                label = label.substring(0, 19);
-                                label += "…";
-                        }
-
                         this.canvas.context.font = "14px \"Monaspace Radon\", monospace";
 
+                        const label = this.name.length <= 20 ? this.name : this.name.substring(0, 19) + "…";
                         const metrics = this.canvas.context.measureText(label);
 
                         this.canvas.context.lineWidth = 2;

@@ -1,37 +1,4 @@
-export function setupDropdowns() {
-        document.querySelectorAll<HTMLDivElement>(".dropdown").forEach(dropdown => {
-                const input = dropdown.querySelector<HTMLInputElement>("input")!;
-                const select = dropdown.querySelector<HTMLButtonElement>("button")!;
-                const list = dropdown.querySelector<HTMLUListElement>("ul")!;
-
-                select.addEventListener("click", () => {
-                        list.style.display = list.style.display === "block" ? "none" : "block";
-                });
-
-                list.querySelectorAll<HTMLLIElement>("li").forEach(option => {
-                        option.addEventListener("click", () => {
-                                select.textContent = option.textContent;
-                                list.style.display = "none";
-
-                                const value = option.dataset.value;
-                                if (value !== undefined) {
-                                        input.value = value;
-                                }
-                        });
-                });
-
-                document.addEventListener("click", event => {
-                        if (!(event.target instanceof Node)) {
-                                return;
-                        }
-
-                        if (!dropdown.contains(event.target)) {
-                                list.style.display = "none";
-                        }
-                });
-        });
-}
-
+// Not neccessary, but useful for distinguishing between color strings and other strings
 export type Hex = string;
 
 type ColorComponent<Type> = {
@@ -48,6 +15,12 @@ type ColorModel<Type> = {
         toHex(color: Type): Hex;
 };
 
+type RGB = {
+        r: number;
+        g: number;
+        b: number;
+};
+
 type RGBA = {
         r: number;
         g: number;
@@ -55,49 +28,63 @@ type RGBA = {
         a: number;
 };
 
+function hex2RGBA(hex: Hex) {
+        hex = hex.replace("#", "").trim();
+
+        if (hex.length !== 3 && hex.length !== 4 && hex.length !== 6 && hex.length !== 8) {
+                return undefined;
+        }
+
+        if (hex.length === 3 || hex.length === 4) {
+                hex = hex.split("").map(character => character + character).join("");
+        }
+
+        return {
+                r: parseInt(hex.slice(0, 2), 16),
+                g: parseInt(hex.slice(2, 4), 16),
+                b: parseInt(hex.slice(4, 6), 16),
+                a: hex.length === 8 ? parseInt(hex.slice(6, 8), 16) : 255
+        };
+}
+
+function RGBorRGBA2Hex(values: number[]) {
+        return "#" + values.map(value => {
+                value = Math.min(Math.max(Math.round(value), 0), 255);
+                return value.toString(16).padStart(2, "0");
+        }).join("");
+}
+
+const RGB_MODEL: ColorModel<RGB> = {
+        format: "rgb",
+        components: [
+                { key: "r", label: "Red",   minimum: 0, maximum: 255 },
+                { key: "g", label: "Green", minimum: 0, maximum: 255 },
+                { key: "b", label: "Blue",  minimum: 0, maximum: 255 },
+        ],
+        fromHex(hex: Hex) {
+                const rgba = hex2RGBA(hex)!;
+                return { r: rgba.r, g: rgba.g, b: rgba.b }
+        },
+        toHex(color: RGB) {
+                return RGBorRGBA2Hex([color.r, color.g, color.b]);
+        }
+};
+
 const RGBA_MODEL: ColorModel<RGBA> = {
         format: "rgba",
-
         components: [
                 { key: "r", label: "Red",   minimum: 0, maximum: 255 },
                 { key: "g", label: "Green", minimum: 0, maximum: 255 },
                 { key: "b", label: "Blue",  minimum: 0, maximum: 255 },
                 { key: "a", label: "Alpha", minimum: 0, maximum: 255 }
         ],
-
         fromHex(hex: Hex) {
-                hex = hex.replace("#", "").trim();
-
-                if (hex.length !== 3 && hex.length !== 4 && hex.length !== 6 && hex.length !== 8) {
-                        return undefined;
-                }
-
-                if (hex.length === 3 || hex.length === 4) {
-                        hex = hex.split("").map(character => character + character).join("");
-                }
-
-                return {
-                        r: parseInt(hex.slice(0, 2), 16),
-                        g: parseInt(hex.slice(2, 4), 16),
-                        b: parseInt(hex.slice(4, 6), 16),
-                        a: hex.length === 8 ? parseInt(hex.slice(6, 8), 16) : 255
-                };
+                return hex2RGBA(hex);
         },
-
         toHex(color: RGBA) {
-                return "#" + [color.r, color.g, color.b, color.a].map(value => {
-                        value = Math.min(Math.max(Math.round(value), 0), 255);
-                        return value.toString(16).padStart(2, "0");
-                }).join("");
+                return RGBorRGBA2Hex([color.r, color.g, color.b, color.a]);
         }
 };
-
-const COLOR_MODELS = {
-        rgba: RGBA_MODEL
-        // Now, I can support more models like HSLA
-} as const;
-
-type ColorFormat = keyof typeof COLOR_MODELS;
 
 type Slider<Type> = {
         component: ColorComponent<Type>;
@@ -190,30 +177,39 @@ export function setupColorPickers() {
 
                 const slidersContainer = colorPicker.querySelector<HTMLDivElement>(".sliders");
                 if (slidersContainer !== null) {
-                        let format = slidersContainer.dataset.format as ColorFormat;
-                        let model = COLOR_MODELS[format];
+                        function setupSlidersForModel<Model extends Record<string, number>>(model: ColorModel<Model>) {
+                                let state = model.fromHex(color)!;
 
-                        let state = model.fromHex(color) ?? model.fromHex("#000000ff")!;
-                        let sliders = buildSliders(slidersContainer, model, (key, value) => {
-                                state[key] = value;
-                                color = model.toHex(state);
-                                triggerColorPickerChangeListeners();
-                        });
+                                const sliders = buildSliders(slidersContainer!, model, (key, value) => {
+                                        state[key] = value as Model[keyof Model];
+                                        color = model.toHex(state);
+                                        triggerColorPickerChangeListeners();
+                                });
 
-                        const colorChanged = (color: Hex) => {
-                                state = model.fromHex(color) ?? state;
+                                const synchronizeColor = (hex: Hex) => {
+                                        state = model.fromHex(hex)!;
 
-                                for (const slider of sliders) {
-                                        const value = state[slider.component.key] as number;
-                                        slider.input.value = String(value);
+                                        for (const slider of sliders) {
+                                                const value = state[slider.component.key] as number;
+                                                slider.input.value = String(value);
 
-                                        const digits = slider.component.maximum.toString().length;
-                                        slider.output.textContent = String(value).padStart(digits, " ");
-                                }
+                                                const digits = slider.component.maximum.toString().length;
+                                                slider.output.textContent = String(value).padStart(digits, " ");
+                                        }
+                                };
+
+                                colorPicker.onColorChange(synchronizeColor);
+                                synchronizeColor(color);
                         }
 
-                        colorPicker.onColorChange(colorChanged);
-                        colorChanged(color);
+                        switch (slidersContainer.dataset.format) {
+                                case "rgb":
+                                        setupSlidersForModel(RGB_MODEL);
+                                        break;
+                                case "rgba":
+                                        setupSlidersForModel(RGBA_MODEL);
+                                        break;
+                        }
                 }
         });
 }
