@@ -149,7 +149,7 @@ export class Character extends Entity2D {
                                 reject(error);
                         }
 
-                        image.src = "placeholder.png";
+                        image.src = "sword.png";
                 });
 
                 await Promise.all([
