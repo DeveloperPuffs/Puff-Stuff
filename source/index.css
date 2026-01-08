@@ -29,6 +29,11 @@
         box-sizing: border-box;
 }
 
+.tippy-box {
+        font-family: "Monaspace Radon", monospace;
+        font-size: var(--body-size);
+}
+
 html, body {
         margin: 0;
         padding: 0;
@@ -49,6 +54,15 @@ input, textarea, select, button {
         appearance: none;
         flex-shrink: 0;
         color: inherit;
+}
+
+#starfield {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
 }
 
 main {
