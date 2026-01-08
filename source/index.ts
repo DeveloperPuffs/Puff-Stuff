@@ -33,10 +33,12 @@ tippy("[data-tippy-content]", {
         }
 });
 
+import { defineSliders } from "./elements/slider";
 import { setupDropdowns } from "./elements/dropdown";
 import { setupColorPickers } from "./elements/color_picker";
 import { Canvas2D } from "./canvas";
 
+defineSliders();
 setupDropdowns();
 setupColorPickers();
 

@@ -1,5 +1,6 @@
 import { TextureSVG } from "./textures";
 import { ColorPickerElement } from "./elements/color_picker";
+import { SliderElement } from "./elements/slider";
 import { Vector2D, Rectangle2D } from "./math";
 import { Entity2D } from "./physics";
 import { Canvas2D } from "./canvas";
@@ -37,10 +38,12 @@ export class Character extends Entity2D {
         private mouth: TextureSVG;
         private hand: TextureSVG;
 
-        private sword: HTMLImageElement | undefined;
+        private sword: TextureSVG;
         private currentSwingAngle: number = 0;
         private targetSwingAngle: number = 0;
         private swingVelocity: number = 0;
+
+        private hat: TextureSVG;
 
         constructor(private canvas: Canvas2D) {
                 super(0, 0, Character.WIDTH, Character.HEIGHT);
@@ -87,26 +90,29 @@ export class Character extends Entity2D {
 
                 this.outlineColor = "#FFFFFF";
 
-                const outlineThicknessSlider = document.querySelector<HTMLInputElement>("#outline-thickness")!;
-                this.outlineThickness = Number.parseFloat(outlineThicknessSlider.value);
+                const outlineThicknessSlider = document.querySelector<SliderElement>("#outline-thickness")!;
+                this.outlineThickness = outlineThicknessSlider.value;
                 outlineThicknessSlider.addEventListener("input", () => {
-                        this.outlineThickness = Number.parseFloat(outlineThicknessSlider.value);
+                        this.outlineThickness = outlineThicknessSlider.value;
                 });
 
                 this.eyesScale = 1;
                 this.scheduleBlink();
 
                 window.addEventListener("click", () => {
-                        if (this.targetSwingAngle === 180) {
+                        if (this.targetSwingAngle === 120) {
                                 this.targetSwingAngle = 0;
                         } else {
-                                this.targetSwingAngle = 180;
+                                this.targetSwingAngle = 120;
                         }
 
                         this.canvas.camera.shake(5);
                 });
 
                 this.naturalScale = new Vector2D(1, 1);
+
+                this.sword = new TextureSVG("sword.svg");
+                this.hat = new TextureSVG("propeller_hat.svg");
         }
 
         scheduleBlink() {
@@ -139,24 +145,13 @@ export class Character extends Entity2D {
         }
 
         async load() {
-                this.sword = await new Promise((resolve, reject) => {
-                        const image = new Image();
-                        image.onload = () => {
-                                resolve(image);
-                        };
-
-                        image.onerror = error => {
-                                reject(error);
-                        }
-
-                        image.src = "sword.png";
-                });
-
                 await Promise.all([
                         this.body.load(),
                         this.eyes.load(),
                         this.mouth.load(),
-                        this.hand.load()
+                        this.hand.load(),
+                        this.sword.load(),
+                        this.hat.load()
                 ]);
 
                 document.querySelector<ColorPickerElement>("#body-color")!.onColorChange(color => {
@@ -244,6 +239,8 @@ export class Character extends Entity2D {
                 // TODO: Add effects to the sword swing
 
                 const outlined = this.canvas.outliner.process(BUFFER_WIDTH, BUFFER_HEIGHT, this.outlineColor, this.outlineThickness, context => {
+                        context.imageSmoothingEnabled = true;
+
                         const renderHand = (direction: Direction) => {
                                 const handWidth = this.sprite.w / 3;
                                 const handHeight = this.sprite.h / 3;
@@ -281,7 +278,7 @@ export class Character extends Entity2D {
                                         context.rotate(swingAngle - Math.PI / 2); // rotate the wrist by the swing angle
 
                                         context.drawImage(
-                                                this.sword!,
+                                                this.sword.image!,
                                                 -swordWidth / 2 + swordOffsetX,
                                                 -swordHeight / 2 + swordOffsetY,
                                                 swordWidth,
@@ -360,12 +357,31 @@ export class Character extends Entity2D {
                                 this.sprite.h
                         );
 
+                        // const hatWidth = this.sprite.w * 0.8;
+                        // const hatHeight = this.sprite.h * 0.8;
+
+                        const hatWidth = this.sprite.w;
+                        const hatHeight = this.sprite.h;
+
+                        context.save(); context.scale(this.direction === Direction.RIGHT ? -1 : 1, 1);
+                        context.drawImage(
+                                this.hat.image!,
+                                -hatWidth / 2 - 5,
+                                -hatHeight / 2 - 24, // - this.sprite.h / 2,
+                                hatWidth,
+                                hatHeight
+                        );
+                        context.restore();
+
                         if (this.direction === Direction.RIGHT) {
                                 renderHand(Direction.RIGHT);
                         } else {
                                 renderHand(Direction.LEFT);
                         }
                 });
+
+                this.canvas.context.imageSmoothingEnabled = true;
+
 
                 this.canvas.context.drawImage(outlined, -BUFFER_WIDTH / 2, -BUFFER_HEIGHT / 2);
 
