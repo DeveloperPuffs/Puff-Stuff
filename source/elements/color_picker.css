@@ -1,27 +1,24 @@
 @import "./../variables.css";
 
-.color-picker {
+color-picker-element > .control {
+        background-color: var(--light-background-color);
+        padding: var(--small-spacing);
         display: flex;
         flex-direction: column;
-        border-radius: var(--medium-radius);
-        padding: var(--small-spacing) var(--medium-spacing);
-        background-color: var(--light-background-color);
-        margin-bottom: var(--medium-spacing);
 }
 
-.color-picker > label {
-        margin-bottom: var(--small-spacing);
-}
-
-.color-picker > .presets {
+color-picker-element > .control > .presets {
         display: grid;
         gap: var(--small-spacing);
-        margin-bottom: var(--small-spacing);
         grid-template-columns: repeat(auto-fill, var(--medium-spacing));
         justify-content: space-between;
 }
 
-.color-picker > .presets > button {
+color-picker-element > .control > .presets:has(*) {
+        padding: var(--small-spacing);
+}
+
+color-picker-element > .control > .presets > button {
         border-radius: var(--large-radius);
         width: var(--medium-spacing);
         height: var(--medium-spacing);
@@ -29,17 +26,16 @@
         margin: 0;
 }
 
-.color-picker > .sliders {
-        display: grid;
-        grid-template-columns: max-content 1fr max-content;
-        column-gap: var(--small-spacing);
-        align-items: center;
+color-picker-element > .control > .sliders {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tiny-spacing);
 }
 
-.color-picker > .sliders > input[type="range"] {
-        margin: 0;
+color-picker-element > .control > .sliders:has(*) {
+        padding: var(--small-spacing);
 }
 
-.color-picker > .sliders > span {
-        white-space-collapse: preserve;
+color-picker-element > .control > .sliders > slider-element {
+        margin-bottom: 0;
 }

@@ -1,35 +1,17 @@
 @import "./../variables.css";
 
-dropdown-element {
-        width: 100%;
-        margin-bottom: 0;
-        display: grid;
-        grid-template-columns: 1fr;
-        margin-bottom: var(--medium-spacing);
-}
-
-dropdown-element[inline-label] {
-        grid-template-columns: auto 1fr;
-        column-gap: var(--small-spacing);
-        align-items: center;
-}
-
-dropdown-element[inline-label] > label {
-        margin-bottom: 0;
-}
-
-dropdown-element > .input {
+dropdown-element > .control {
         position: relative;
         width: 100%;
 }
 
-dropdown-element > .input > button {
+dropdown-element > .control > button {
         width: 100%;
         text-align: left;
         margin-bottom: 0 !important;
 }
 
-dropdown-element > .input > ul {
+dropdown-element > .control > ul {
         display: none;
         list-style: none;
         position: absolute;
@@ -49,13 +31,13 @@ dropdown-element > .input > ul {
         z-index: 999;
 }
 
-dropdown-element > .input > ul > li {
+dropdown-element > .control > ul > li {
         padding: var(--tiny-spacing) var(--small-spacing);
         transition: background-color 100ms ease-out;
         background-color: transparent;
         cursor: pointer;
 }
 
-dropdown-element > .input > ul > li:hover {
+dropdown-element > .control > ul > li:hover {
         background-color: var(--lighter-background-color);
 }

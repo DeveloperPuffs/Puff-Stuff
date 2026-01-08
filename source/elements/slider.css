@@ -1,15 +1,16 @@
 @import "./../variables.css";
 
-slider-element {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
+slider-element > .control {
+        margin-left: var(--small-spacing);
+        gap: var(--medium-spacing);
         align-items: center;
-        margin-bottom: var(--medium-spacing);
-        gap: var(--small-spacing);
         user-select: none;
+        display: flex;
+        width: 100%;
 }
 
-slider-element > .track {
+slider-element > .control > .track {
+        flex: 1;
         position: relative;
         height: var(--small-spacing);
         background: var(--light-background-color);
@@ -17,7 +18,7 @@ slider-element > .track {
         cursor: pointer;
 }
 
-slider-element > .track > .thumb {
+slider-element > .control > .track > .thumb {
         position: absolute;
         top: 50%;
         border-radius: 50%;
@@ -25,8 +26,18 @@ slider-element > .track > .thumb {
         height: calc(var(--small-spacing) * 1.5);
         background: var(--lightest-background-color);
         transform: translate(-50%, -50%);
+        transition: left 100ms ease-out;
 }
 
-slider-element > span {
+slider-element.dragging > .control > .track > .thumb {
+        transition: none;
+}
+
+slider-element:not(.connected) > .control > .track .thumb {
+        transition: none;
+}
+
+slider-element > .control > span {
+        white-space: pre;
         text-align: right;
 }

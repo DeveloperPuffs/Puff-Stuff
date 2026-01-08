@@ -1,4 +1,6 @@
-// Not neccessary, but useful for distinguishing between color strings and other strings
+import { LabeledElement } from "./labeled";
+import { SliderElement } from "./slider";
+
 export type Hex = string;
 
 type ColorComponent<Type> = {
@@ -6,6 +8,7 @@ type ColorComponent<Type> = {
         label: string;
         minimum: number;
         maximum: number;
+        step: number;
 };
 
 type ColorModel<Type> = {
@@ -57,9 +60,9 @@ function RGBorRGBA2Hex(values: number[]) {
 const RGB_MODEL: ColorModel<RGB> = {
         format: "rgb",
         components: [
-                { key: "r", label: "Red",   minimum: 0, maximum: 255 },
-                { key: "g", label: "Green", minimum: 0, maximum: 255 },
-                { key: "b", label: "Blue",  minimum: 0, maximum: 255 },
+                { key: "r", label: "Red  ", minimum: 0, maximum: 255, step: 1 },
+                { key: "g", label: "Green", minimum: 0, maximum: 255, step: 1 },
+                { key: "b", label: "Blue ", minimum: 0, maximum: 255, step: 1 },
         ],
         fromHex(hex: Hex) {
                 const rgba = hex2RGBA(hex)!;
@@ -73,10 +76,10 @@ const RGB_MODEL: ColorModel<RGB> = {
 const RGBA_MODEL: ColorModel<RGBA> = {
         format: "rgba",
         components: [
-                { key: "r", label: "Red",   minimum: 0, maximum: 255 },
-                { key: "g", label: "Green", minimum: 0, maximum: 255 },
-                { key: "b", label: "Blue",  minimum: 0, maximum: 255 },
-                { key: "a", label: "Alpha", minimum: 0, maximum: 255 }
+                { key: "r", label: "Red  ", minimum: 0, maximum: 255, step: 1 },
+                { key: "g", label: "Green", minimum: 0, maximum: 255, step: 1 },
+                { key: "b", label: "Blue ", minimum: 0, maximum: 255, step: 1 },
+                { key: "a", label: "Alpha", minimum: 0, maximum: 255, step: 1 }
         ],
         fromHex(hex: Hex) {
                 return hex2RGBA(hex);
@@ -86,130 +89,117 @@ const RGBA_MODEL: ColorModel<RGBA> = {
         }
 };
 
-type Slider<Type> = {
-        component: ColorComponent<Type>;
-        input: HTMLInputElement;
-        output: HTMLSpanElement;
-};
-
-function buildSliders<Type>(container: Element, model: ColorModel<Type>, changed: (key: keyof Type, value: number) => void): Slider<Type>[] {
-        container.replaceChildren();
-
-        const sliders: Slider<Type>[] = [];
-
-        for (const component of model.components) {
-                const digits = component.maximum.toString().length;
-
-                const label = document.createElement("label");
-                label.textContent = component.label;
-
-                const input = document.createElement("input");
-                input.type = "range";
-                input.min = String(component.minimum);
-                input.max = String(component.maximum);
-
-                const span = document.createElement("span");
-
-                input.addEventListener("input", () => {
-                        const value = Number(input.value);
-                        span.textContent = input.value.padStart(digits, " ");
-                        changed(component.key, value);
-                });
-
-                container.append(label, input, span);
-                sliders.push({ component, input, output: span });
+export class ColorPickerElement extends LabeledElement {
+        static define() {
+                customElements.define("color-picker-element", ColorPickerElement);
         }
 
-        return sliders;
-}
+        private presets!: HTMLDivElement;
+        private sliders!: HTMLDivElement;
 
-export interface ColorPickerElement extends HTMLDivElement {
-        getColor(): Hex;
-        onColorChange(listener: (color: Hex) => void): void;
-}
+        private _color: Hex;
+        private model?: ColorModel<any>;
+        private controls: Map<keyof any, SliderElement>;
 
-export function setupColorPickers() {
-        document.querySelectorAll<HTMLDivElement>(".color-picker").forEach(element => {
-                const colorPicker = element as ColorPickerElement;
-                let color: Hex = colorPicker.dataset.color ?? "#000000FF";
+        constructor() {
+                super();
 
-                const colorChangeListeners: ((color: Hex) => void)[] = [];
-                function triggerColorPickerChangeListeners() {
-                        for (const colorChangeListener of colorChangeListeners) {
-                                colorChangeListener(color);
+                this._color = "#000000FF";
+                this.controls = new Map();
+        }
+
+        get color() {
+                return this._color;
+        }
+
+        set color(color: Hex) {
+                if (color === this.color) {
+                        return;
+                }
+
+                this._color = color;
+
+                const format = this.getAttribute("format");
+                let model: ColorModel<any> | undefined;
+                switch (format) {
+                        case "rgb": model = RGB_MODEL; break;
+                        case "rgba": model = RGBA_MODEL; break;
+                }
+
+                if (model) {
+                        const state = model.fromHex(color)!;
+                        for (const [key, slider] of this.controls.entries()) {
+                                slider.value = state[key];
                         }
                 }
 
-                Object.defineProperty(colorPicker, "getColor", {
-                        writable: false,
-                        enumerable: true,
-                        configurable: false,
-                        value: () => {
-                                return color;
-                        }
-                });
+                if (this.isConnected) {
+                        this.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+        }
 
-                Object.defineProperty(colorPicker, "onColorChange", {
-                        writable: false,
-                        enumerable: true,
-                        configurable: false,
-                        value: (listener: (color: Hex) => void) => {
-                                colorChangeListeners.push(listener);
-                        }
-                });
+        connectedCallback() {
+                const content = super.connectedCallback();
 
-                const presets = colorPicker.querySelector<HTMLDivElement>(".presets");
-                if (presets !== null) {
-                        const presetColors = presets.textContent?.split(",") ?? [];
-                        presets.replaceChildren();
+                const template = document.querySelector<HTMLTemplateElement>("#color-picker-template")!;
+                this.control.append(template.content.cloneNode(true));
 
-                        for (const presetColor of presetColors) {
-                                const button = document.createElement("button");
-                                button.style.backgroundColor = presetColor;
-                                button.addEventListener("click", () => {
-                                        color = presetColor;
-                                        triggerColorPickerChangeListeners();
+                this.presets = this.control.querySelector<HTMLDivElement>(".presets")!;
+                this.sliders = this.control.querySelector<HTMLDivElement>(".sliders")!;
+
+                this.color = this.getAttribute("color") ?? this.color;
+
+                const presets = content
+                        .trim()
+                        .split(",")
+                        .map(preset => preset.trim())
+                        .filter(preset => preset.length > 0);
+
+                for (const preset of presets) {
+                        const button = document.createElement("button");
+                        button.style.backgroundColor = preset;
+                        button.addEventListener("click", () => {
+                                this.color = preset;
+                        });
+
+                        this.presets.appendChild(button);
+                }
+
+                const format = this.getAttribute("format");
+                switch (format) {
+                        case "rgb":
+                                this.model = RGB_MODEL;
+                                break;
+                        case "rgba":
+                                this.model = RGBA_MODEL;
+                                break;
+                }
+
+                if (this.model !== undefined) {
+                        let state = this.model.fromHex(this.color)!;
+
+                        this.controls.clear();
+
+                        for (const component of this.model.components) {
+                                const slider = document.createElement("slider-element") as SliderElement;
+                                slider.setAttribute("label", component.label);
+                                slider.toggleAttribute("inline-label", true);
+                                slider.setAttribute("minimum", component.minimum.toString()); 
+                                slider.setAttribute("maximum", component.maximum.toString()); 
+                                slider.setAttribute("step", component.step.toString()); 
+
+                                slider.addEventListener("input", () => {
+                                        state[component.key] = slider.value;
+                                        this.color = this.model!.toHex(state);
                                 });
 
-                                presets.appendChild(button);
+                                this.controls.set(component.key, slider); 
+                                this.sliders.appendChild(slider);
+
+                                slider.value = state[component.key];
                         }
                 }
 
-                const slidersContainer = colorPicker.querySelector<HTMLDivElement>(".sliders");
-                if (slidersContainer !== null) {
-                        function setupSlidersForModel<Model extends Record<string, number>>(model: ColorModel<Model>) {
-                                let state = model.fromHex(color)!;
-
-                                const sliders = buildSliders(slidersContainer!, model, (key, value) => {
-                                        state[key] = value as Model[keyof Model];
-                                        color = model.toHex(state);
-                                        triggerColorPickerChangeListeners();
-                                });
-
-                                const synchronizeColor = (hex: Hex) => {
-                                        state = model.fromHex(hex)!;
-
-                                        for (const slider of sliders) {
-                                                const value = state[slider.component.key] as number;
-                                                slider.input.value = String(value);
-
-                                                const digits = slider.component.maximum.toString().length;
-                                                slider.output.textContent = String(value).padStart(digits, " ");
-                                        }
-                                };
-
-                                colorPicker.onColorChange(synchronizeColor);
-                                synchronizeColor(color);
-                        }
-
-                        switch (slidersContainer.dataset.format) {
-                                case "rgb":
-                                        setupSlidersForModel(RGB_MODEL);
-                                        break;
-                                case "rgba":
-                                        setupSlidersForModel(RGBA_MODEL);
-                                        break;
-                        }
-                }
-        });
+                return "";
+        }
 }

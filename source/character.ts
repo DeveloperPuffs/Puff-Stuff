@@ -154,18 +154,20 @@ export class Character extends Entity2D {
                         this.hat.load()
                 ]);
 
-                document.querySelector<ColorPickerElement>("#body-color")!.onColorChange(color => {
+                const bodyColorPicker = document.querySelector<ColorPickerElement>("#body-color-picker")!;
+                bodyColorPicker.addEventListener("input", () => {
                         const bodyPath = this.body.svg!.querySelector<SVGClipPathElement>("#body")!;
-                        bodyPath.style.fill = color;
+                        bodyPath.style.fill = bodyColorPicker.color;
                         this.body.rasterize();
 
                         const handPath = this.hand.svg!.querySelector<SVGClipPathElement>("#hand")!;
-                        handPath.style.fill = color;
+                        handPath.style.fill = bodyColorPicker.color;
                         this.hand.rasterize();
                 });
 
-                document.querySelector<ColorPickerElement>("#outline-color")!.onColorChange(color => {
-                        this.outlineColor = color;
+                const outlineColorPicker = document.querySelector<ColorPickerElement>("#outline-color-picker")!;
+                outlineColorPicker.addEventListener("input", () => {
+                        this.outlineColor = outlineColorPicker.color;
                 });
         }
 

@@ -44,7 +44,7 @@
                                                                         placeholder="PlasmaPuffs"
                                                                         spellcheck="false"
                                                                 >
-                                                                <dropdown-element label="Pronouns" value="Unspecified">
+                                                                <dropdown-element label="Pronouns" value="Unspecified" inline-label>
                                                                         He / Him,
                                                                         She / Her,
                                                                         They / Them,
@@ -64,28 +64,29 @@
                                                 <div id="appearance-content" class="step">
                                                         <div class="title">Appearance</div>
                                                         <div class="scroller">
-                                                                <div id="body-color" class="color-picker" data-color="#fae196">
-                                                                        <label>Body Color</label>
-                                                                        <div class="presets">
-                                                                                #fae196,
-                                                                                #F7D7B4,
-                                                                                #F0C8A0,
-                                                                                #E8B98C,
-                                                                                #E0AD82,
-                                                                                #D9A06F,
-                                                                                #CF8F5F,
-                                                                                #C78455,
-                                                                                #B8734A,
-                                                                                #A9653F,
-                                                                                #945736,
-                                                                                #7F472C,
-                                                                                #E4E4E4,
-                                                                                #D8A5A5,
-                                                                                #C6B7E2,
-                                                                                #6FB7B1
-                                                                        </div>
-                                                                        <div class="sliders" data-format="rgb"></div>
-                                                                </div>
+                                                                <color-picker-element
+                                                                        label="Body Color"
+                                                                        color="#fae196"
+                                                                        format="rgb"
+                                                                        id="body-color-picker"
+                                                                >
+                                                                        #fae196,
+                                                                        #F7D7B4,
+                                                                        #F0C8A0,
+                                                                        #E8B98C,
+                                                                        #E0AD82,
+                                                                        #D9A06F,
+                                                                        #CF8F5F,
+                                                                        #C78455,
+                                                                        #B8734A,
+                                                                        #A9653F,
+                                                                        #945736,
+                                                                        #7F472C,
+                                                                        #E4E4E4,
+                                                                        #D8A5A5,
+                                                                        #C6B7E2,
+                                                                        #6FB7B1
+                                                                </color-picker-element>
                                                                 <button class="proceed">Proceed</button>
                                                         </div>
                                                 </div>
@@ -106,14 +107,15 @@
                                                 <div id="effects-content" class="step">
                                                         <div class="title">Effects</div>
                                                         <div class="scroller">
-                                                                <!-- TODO: Made sliders have a span with their value to the right -->
-                                                                <div id="outline-color" class="color-picker" data-color="#FFFFFF">
-                                                                        <label>Outline Color</label>
-                                                                        <div class="sliders" data-format="rgba"></div>
-                                                                </div>
-                                                                <slider-element
+                                                                <color-picker-element
+                                                                        label="Outline Color"
+                                                                        color="#FFFFFF"
+                                                                        format="rgba"
+                                                                        id="outline-color-picker"
+                                                                ></color-picker-element>
+                                                                <slider-element inline-label
                                                                         id="outline-thickness"
-                                                                        label="Thickness"
+                                                                        label="Outline Thickness"
                                                                         minimum="0"
                                                                         maximum="2"
                                                                         value="0.5"
@@ -134,19 +136,23 @@
                         </div>
                         <canvas id="canvas"></canvas>
                 </main>
-                <template id="dropdown-template">
+                <template id="labeled-template">
                         <label></label>
-                        <div class="input">
-                                <button></button>
-                                <ul></ul>
-                        </div>
+                        <div class="control"></div>
+                </template>
+                <template id="dropdown-template">
+                        <button></button>
+                        <ul></ul>
                 </template>
                 <template id="slider-template">
-                        <label></label>
                         <div class="track">
                                 <div class="thumb"></div>
                         </div>
                         <span></span>
+                </template>
+                <template id="color-picker-template">
+                        <div class="presets"></div>
+                        <div class="sliders"></div>
                 </template>
                 <script src="source/index.js" type="module" defer></script>
         </body>

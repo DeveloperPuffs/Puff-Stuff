@@ -1,13 +1,22 @@
-export class DropdownElement extends HTMLElement {
+import { LabeledElement } from "./labeled";
+
+export class DropdownElement extends LabeledElement {
         static define() {
                 customElements.define("dropdown-element", DropdownElement);
         }
 
-        private label!: HTMLLabelElement;
         private button!: HTMLButtonElement;
         private list!: HTMLUListElement;
-        private options: string[] = [];
-        private _value: string = "";
+
+        private options: string[];
+        private _value: string;
+
+        constructor() {
+                super();
+
+                this._value = "";
+                this.options = [];
+        }
 
         get value() {
                 return this._value;
@@ -27,25 +36,20 @@ export class DropdownElement extends HTMLElement {
                 this.dispatchEvent(new Event("change"));
         }
 
-        constructor() {
-                super();
-        }
-
         connectedCallback() {
-                this.options = (this.textContent ?? "")
+                const content = super.connectedCallback();
+
+                const template = document.querySelector<HTMLTemplateElement>("#dropdown-template")!;
+                this.control.append(template.content.cloneNode(true));
+
+                this.button = this.control.querySelector<HTMLButtonElement>("button")!;
+                this.list = this.control.querySelector<HTMLUListElement>("ul")!;
+
+                this.options = content
+                        .trim()
                         .split(",")
                         .map(option => option.trim())
                         .filter(option => option.length > 0);
-                this.textContent = "";
-
-                const template = document.querySelector<HTMLTemplateElement>("#dropdown-template")!;
-                this.append(template.content.cloneNode(true));
-
-                this.label = this.querySelector<HTMLLabelElement>("label")!;
-                this.button = this.querySelector<HTMLButtonElement>("button")!;
-                this.list = this.querySelector<HTMLUListElement>("ul")!;
-
-                this.label.textContent = this.getAttribute("label") ?? "";
 
                 for (const option of this.options) {
                         const item = document.createElement("li");
@@ -75,5 +79,7 @@ export class DropdownElement extends HTMLElement {
 
                 this.button.id = `${identifier}-button`;
                 this.label.htmlFor = this.button.id;
+
+                return "";
         }
 }

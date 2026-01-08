@@ -1,39 +1,94 @@
-export class SliderElement extends HTMLElement {
+import { LabeledElement } from "./labeled";
+
+export class SliderElement extends LabeledElement {
         static define() {
                 customElements.define("slider-element", SliderElement);
         }
 
-        private label!: HTMLLabelElement;
         private track!: HTMLDivElement;
         private thumb!: HTMLDivElement;
         private mark!: HTMLSpanElement;
 
-        private _value = 0;
-        private minimum = 0;
-        private maximum = 100;
-        private step = 1;
+        private _value: number;
+        private minimum: number;
+        private maximum: number;
+        private step: number;
 
         constructor() {
                 super();
 
-                const template = document.querySelector<HTMLTemplateElement>("#slider-template")!;
-                this.append(template.content.cloneNode(true));
+                this._value = 0;
+                this.minimum = 0;
+                this.maximum = 1;
+                this.step = 1;
         }
 
         connectedCallback() {
-                this.label = this.querySelector<HTMLLabelElement>("label")!;
-                this.track = this.querySelector<HTMLDivElement>(".track")!;
-                this.thumb = this.querySelector<HTMLDivElement>(".thumb")!;
-                this.mark = this.querySelector<HTMLSpanElement>("span")!;
-                this.track.addEventListener("pointerdown", this.handleClick);
-                this.attributeChangedCallback();
+                super.connectedCallback();
+
+                const template = document.querySelector<HTMLTemplateElement>("#slider-template")!;
+                this.control.append(template.content.cloneNode(true));
+
+                this.track = this.control.querySelector<HTMLDivElement>(".track")!;
+                this.thumb = this.control.querySelector<HTMLDivElement>(".thumb")!;
+                this.mark = this.control.querySelector<HTMLSpanElement>("span")!;
+
+                this.track.addEventListener("pointerdown", event => {
+                        this.classList.add("dragging");
+
+                        this.track.setPointerCapture(event.pointerId);
+                        this.updateHandle(event);
+
+                        const moveHandler = (event: PointerEvent) => {
+                                this.updateHandle(event);
+                        };
+
+                        const releaseHandler = () => {
+                                window.removeEventListener("pointermove", moveHandler);
+                                window.removeEventListener("pointerup", releaseHandler);
+                                this.classList.remove("dragging");
+                        };
+
+                        window.addEventListener("pointermove", moveHandler);
+                        window.addEventListener("pointerup", releaseHandler);
+                        this.dispatchEvent(new Event("change"));
+                });
+
+                this._value = Number(this.getAttribute("value") ?? this._value);
+                this.minimum = Number(this.getAttribute("minimum") ?? this.minimum);
+                this.maximum = Number(this.getAttribute("maximum") ?? this.maximum);
+                this.step = Number(this.getAttribute("step") ?? this.step);
+
+                this.refresh();
+
+                return "";
         }
 
-        attributeChangedCallback() {
-                this.minimum = Number(this.getAttribute("minimum") ?? "0");
-                this.maximum = Number(this.getAttribute("maximum") ?? "100");
-                this.value = Number(this.getAttribute("value") ?? this.minimum);
-                this.step = Number(this.getAttribute("step") ?? "1");
+        attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+                if (oldValue === newValue) {
+                        return;
+                }
+
+                super.attributeChangedCallback(name, oldValue, newValue);
+
+                switch (name) {
+                        case "minimum":
+                                this.minimum = Number(newValue);
+                                break;
+                        case "value":
+                                this.updateValue(Number(newValue), false);
+                                break;
+                        case "step":
+                                this.step = Number(newValue);
+                                break;
+                        default:
+                                return;
+                }
+
+                if (!this.isConnected) {
+                        return;
+                }
+
                 this.refresh();
         }
 
@@ -42,45 +97,59 @@ export class SliderElement extends HTMLElement {
         }
 
         set value(value: number) {
+                this.updateValue(value, true);
+        }
+
+        private updateValue(value: number, setAttribute: boolean) {
                 const clamped = Math.min(this.maximum, Math.max(this.minimum, value));
                 if (clamped === this._value) {
                         return;
                 }
 
                 this._value = clamped;
-                this.setAttribute("value", String(clamped));
-                this.refresh();
 
-                this.dispatchEvent(new Event("input", { bubbles: true }));
+                if (setAttribute) {
+                        this.setAttribute("value", clamped.toString());
+                }
+
+                if (this.isConnected) {
+                        this.refresh();
+                        this.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+        }
+
+        private countDecimals() {
+                const text = this.step.toString();
+
+                if (text.includes("e-")) {
+                        return Number(text.split("e-")[1]);
+                }
+
+                const dot = text.indexOf(".");
+                return dot === -1 ? 0 : text.length - dot - 1;
+        }
+
+        private formatValue(value: number) {
+                const decimals = this.countDecimals();
+
+                const absolute = Math.max(Math.abs(this.minimum), Math.abs(this.maximum));
+                const integerDigits = Math.max(1, Math.floor(Math.log10(absolute)) + 1);
+
+                const fixed = Math.abs(value).toFixed(decimals);
+                const [integerPart, decimalPart] = fixed.split(".");
+
+                const paddedInteger = integerPart.padStart(integerDigits, " ");
+
+                return decimals > 0
+                        ? `${value < 0 ? "-" : ""}${paddedInteger}.${decimalPart}`
+                        : `${value < 0 ? "-" : ""}${paddedInteger}`;
         }
 
         private refresh() {
-                this.label.textContent = this.getAttribute("label") ?? "";
-
                 const interpolation = (this._value - this.minimum) / (this.maximum - this.minimum);
                 this.thumb.style.left = `${interpolation * 100}%`;
-
-                const decimals = this.step <= 0 ? 0 : Math.max(0, -Math.floor(Math.log10(this.step)));
-                this.mark.textContent = this._value.toFixed(decimals);
+                this.mark.textContent = this.formatValue(this._value);
         }
-
-        private handleClick = (event: PointerEvent) => {
-                this.track.setPointerCapture(event.pointerId);
-                this.updateHandle(event);
-
-                const moveHandler = (event: PointerEvent) => {
-                        this.updateHandle(event);
-                };
-
-                const releaseHandler = () => {
-                        window.removeEventListener("pointermove", moveHandler);
-                        window.removeEventListener("pointerup", releaseHandler);
-                };
-
-                window.addEventListener("pointermove", moveHandler);
-                window.addEventListener("pointerup", releaseHandler);
-                this.dispatchEvent(new Event("change"));
-        };
 
         private updateHandle(event: PointerEvent) {
                 const trackRectangle = this.track.getBoundingClientRect();

@@ -35,12 +35,12 @@ tippy("[data-tippy-content]", {
 
 import { SliderElement } from "./elements/slider";
 import { DropdownElement } from "./elements/dropdown";
-import { setupColorPickers } from "./elements/color_picker";
+import { ColorPickerElement } from "./elements/color_picker";
 import { Canvas2D } from "./canvas";
 
 SliderElement.define();
 DropdownElement.define();
-setupColorPickers();
+ColorPickerElement.define();
 
 window.addEventListener("contextmenu", event => {
         event.preventDefault();
