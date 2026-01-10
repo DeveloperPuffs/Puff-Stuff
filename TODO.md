@@ -1,4 +1,4 @@
-- Spear, bow, gun, wand behaviors
+- gun, staff, and throwing behaviors
 - Calculate character buffer size dynamically using body, accessories, and weapon sizes
 - Background music
 - UI sounds

@@ -55,6 +55,19 @@
                         }
                 }
         },
+        {
+                "name": "Staff",
+                "path": "weapons/staff.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "weapon",
+                        "behavior": "sword",
+                        "offset": {
+                                "x": 0,
+                                "y": 0
+                        }
+                }
+        },
 
         {
                 "name": "No Headwear",
