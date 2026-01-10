@@ -216,9 +216,9 @@ export class Character extends Entity2D {
                         this.canvas.cursor.x - this.x
                 );
 
-                const leftArmAdvanceAngle = cursorAngle - Math.PI / 2;
-                const handOffsetX = Math.cos(leftArmAdvanceAngle) * handShoulderDistance;
-                const handOffsetY = Math.sin(leftArmAdvanceAngle) * handShoulderDistance;
+                const armAdvanceAngle = cursorAngle - Math.PI / 2;
+                const handOffsetX = Math.cos(armAdvanceAngle) * handShoulderDistance;
+                const handOffsetY = Math.sin(armAdvanceAngle) * handShoulderDistance;
 
                 context.save();
                 context.translate(shoulderOffsetX, shoulderOffsetY); // Origin is at shoulder
@@ -270,7 +270,7 @@ export class Character extends Entity2D {
                         this.canvas.cursor.x - this.x
                 );
 
-                const leftArmAdvanceAngle = cursorAngle - Math.PI / 2;
+                const leftArmAdvanceAngle = cursorAngle + Math.PI / 2 * (direction === Direction.LEFT ? -1 : 1);
                 const handOffsetX = Math.cos(leftArmAdvanceAngle) * handShoulderDistance;
                 const handOffsetY = Math.sin(leftArmAdvanceAngle) * handShoulderDistance;
 
