@@ -6,6 +6,8 @@ import { Vector2D } from "./math";
 import { Mouse } from "./system/mouse";
 import { Keyboard } from "./system/keyboard";
 
+const MAXIMUM_DELTA_TIME = 0.05;
+
 export class Canvas2D {
         private element: HTMLCanvasElement;
         private context: CanvasRenderingContext2D;
@@ -45,6 +47,12 @@ export class Canvas2D {
                 });
 
                 resizeObserver.observe(this.element);
+
+                document.addEventListener("visibilitychange", () => {
+                        if (document.visibilityState === "visible") {
+                                this.camera.snap(this.player.x, this.player.y);
+                        }
+                });
         }
 
         private validateClick = (event: MouseEvent) => {
@@ -117,7 +125,7 @@ export class Canvas2D {
         }
 
         animate(timestamp: number) {
-                const deltaTime = (timestamp - this.currentTime) / 1000;
+                const deltaTime = Math.min((timestamp - this.currentTime) / 1000, MAXIMUM_DELTA_TIME);
                 this.currentTime = timestamp;
 
                 this.camera.update(deltaTime);

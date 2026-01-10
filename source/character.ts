@@ -99,7 +99,7 @@ export class Character extends Entity2D {
                                 this.targetSwingAngle = 120;
                         }
 
-                        this.canvas.camera.shake(5);
+                        this.canvas.camera.shake(10);
                 });
 
                 this.scale = new Vector2D(1, 1);

@@ -1,7 +1,5 @@
 import { Vector2D } from "./math";
 import { Canvas2D } from "./canvas";
-
-// TODO: Shake should be relative to screenn size?
 export class Camera2D extends Vector2D {
         private current: Vector2D;
         private target: Vector2D;
@@ -38,8 +36,8 @@ export class Camera2D extends Vector2D {
 
                 const panningX = this.panning * this.canvas.mouse.x / (-this.canvas.width / 2);
                 const panningY = this.panning * this.canvas.mouse.y / (-this.canvas.height / 2);
-                const shakeX = Math.cos(this.shakeDirection) * this.shakePower;
-                const shakeY = Math.sin(this.shakeDirection) * this.shakePower;
+                const shakeX = Math.cos(this.shakeDirection) * this.shakePower * this.canvas.width / 1000;
+                const shakeY = Math.sin(this.shakeDirection) * this.shakePower * this.canvas.height / 1000;
                 this.x = this.current.x + panningX + shakeX;
                 this.y = this.current.y + panningY + shakeY;
         }
@@ -49,7 +47,7 @@ export class Camera2D extends Vector2D {
         }
 
         snap(x: number, y: number) {
-                this.current.y = x;
+                this.current.x = x;
                 this.current.y = y;
                 this.target.x = x;
                 this.target.y = y;
