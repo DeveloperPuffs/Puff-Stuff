@@ -36,8 +36,8 @@ export class Camera2D extends Vector2D {
                 this.current.x += (this.target.x - this.current.x) * this.speed * deltaTime;
                 this.current.y += (this.target.y - this.current.y) * this.speed * deltaTime;
 
-                const panningX = this.panning * this.canvas.cursor.x / (-this.canvas.width / 2);
-                const panningY = this.panning * this.canvas.cursor.y / (-this.canvas.height / 2);
+                const panningX = this.panning * this.canvas.mouse.x / (-this.canvas.width / 2);
+                const panningY = this.panning * this.canvas.mouse.y / (-this.canvas.height / 2);
                 const shakeX = Math.cos(this.shakeDirection) * this.shakePower;
                 const shakeY = Math.sin(this.shakeDirection) * this.shakePower;
                 this.x = this.current.x + panningX + shakeX;
@@ -62,10 +62,17 @@ export class Camera2D extends Vector2D {
                 this.target.y = Math.min(Math.max(this.target.y, y - distanceY), y + distanceY);
         }
 
-        project() {
-                this.canvas.context.translate(
-                        this.canvas.width / 2 - this.x,
-                        this.canvas.height / 2 - this.y
-                );
+        project(target: Vector2D | CanvasRenderingContext2D) {
+                if (target instanceof Vector2D) {
+                        target.x += this.x - this.canvas.width / 2;
+                        target.y += this.y - this.canvas.height / 2;
+                }
+
+                if (target instanceof CanvasRenderingContext2D) {
+                        target.translate(
+                                this.canvas.width / 2 - this.x,
+                                this.canvas.height / 2 - this.y
+                        );
+                }
         }
 }

@@ -116,7 +116,7 @@ export class Character extends Entity2D {
                 this.eyesScale = 1;
                 this.scheduleBlink();
 
-                this.canvas.onClick(() => {
+                this.canvas.mouse.onClick(() => {
                         if (this.targetSwingAngle === 120) {
                                 this.targetSwingAngle = 0;
                         } else {
@@ -207,7 +207,7 @@ export class Character extends Entity2D {
                 }
 
                 const deadzone = this.body.width / 8;
-                const distance = this.canvas.cursor.x - this.x;
+                const distance = this.canvas.mouse.x - this.x;
                 if (Math.abs(distance) > deadzone) {
                         const direction = distance < 0 ? Direction.LEFT : Direction.RIGHT;
                         if (direction != this.direction) {
@@ -235,8 +235,8 @@ export class Character extends Entity2D {
                         const swordOffsetY = -this.sword!.height / 4;
 
                         const cursorAngle = Math.atan2(
-                                this.canvas.cursor.y - this.y,
-                                this.canvas.cursor.x - this.x
+                                this.canvas.mouse.y - this.y,
+                                this.canvas.mouse.x - this.x
                         );
 
                         const leftArmAdvanceAngle = cursorAngle - Math.PI / 2;
@@ -319,8 +319,8 @@ export class Character extends Entity2D {
                         this.body.height
                 );
 
-                const lookX = (this.canvas.cursor.x - this.x) / this.w * Character.LOOK_FACTOR;
-                const lookY = (this.canvas.cursor.y - this.y) / this.h * Character.LOOK_FACTOR;
+                const lookX = (this.canvas.mouse.x - this.x) / this.w * Character.LOOK_FACTOR;
+                const lookY = (this.canvas.mouse.y - this.y) / this.h * Character.LOOK_FACTOR;
 
                 context.drawImage(
                         this.eyes.getImage(false),
@@ -398,31 +398,31 @@ export class Character extends Entity2D {
                 context.restore();
         }
 
-        render() {
-                this.canvas.context.save();
+        render(context: CanvasRenderingContext2D) {
+                context.save();
 
-                this.canvas.context.translate(this.x, this.y);
+                context.translate(this.x, this.y);
 
                 const logicalScaleX = this.w / this.body.width;
                 const logicalScaleY = this.h / this.body.height;
-                this.canvas.context.scale(logicalScaleX, logicalScaleY);
+                context.scale(logicalScaleX, logicalScaleY);
 
-                this.renderCharacter(this.canvas.context);
+                this.renderCharacter(context);
 
                 if (this.name !== "") {
-                        this.canvas.context.font = "14px \"Monaspace Radon\", monospace";
+                        context.font = "14px \"Monaspace Radon\", monospace";
 
                         const label = this.name.length <= 20 ? this.name : this.name.substring(0, 19) + "…";
-                        const metrics = this.canvas.context.measureText(label);
+                        const metrics = context.measureText(label);
 
-                        this.canvas.context.lineWidth = 2;
-                        this.canvas.context.strokeStyle = "black";
-                        this.canvas.context.strokeText(label, metrics.width / -2, -this.body.height / 2);
+                        context.lineWidth = 2;
+                        context.strokeStyle = "black";
+                        context.strokeText(label, metrics.width / -2, -this.body.height / 2);
 
-                        this.canvas.context.fillStyle = "white";
-                        this.canvas.context.fillText(label, metrics.width / -2, -this.body.height / 2);
+                        context.fillStyle = "white";
+                        context.fillText(label, metrics.width / -2, -this.body.height / 2);
                 }
 
-                this.canvas.context.restore();
+                context.restore();
         }
 }

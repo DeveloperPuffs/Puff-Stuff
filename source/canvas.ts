@@ -3,24 +3,29 @@ import { Character } from "./character";
 import { Background } from "./background";
 import { Outliner } from "./outliner";
 import { Vector2D } from "./math";
+import { Mouse } from "./mouse";
 
 export class Canvas2D {
         private element: HTMLCanvasElement;
-        public context: CanvasRenderingContext2D;
+        private context: CanvasRenderingContext2D;
 
-        public mouse: Vector2D;
-        public cursor: Vector2D;
+        public mouse: Mouse;
         public camera: Camera2D;
         public background: Background;
         public outliner: Outliner;
         public player: Character;
 
         private currentTime: number = 0;
-        private clickCallbacks: (() => void)[] = [];
 
         constructor() {
                 this.element = document.querySelector<HTMLCanvasElement>("#canvas")!;
                 this.context = this.element.getContext("2d")!;
+
+                this.mouse = new Mouse(this.element);
+                this.camera = new Camera2D(this);
+                this.background = new Background(this);
+                this.outliner = new Outliner();
+                this.player = new Character(this);
 
                 const resizeObserver = new ResizeObserver(entries => {
                         for (const entry of entries) {
@@ -36,36 +41,6 @@ export class Canvas2D {
                 });
 
                 resizeObserver.observe(this.element);
-
-                this.camera = new Camera2D(this);
-                this.background = new Background(this);
-                this.outliner = new Outliner();
-                this.player = new Character(this);
-
-                this.mouse = Vector2D.zero();
-                this.cursor = Vector2D.zero();
-                window.addEventListener("mousemove", event => {
-                        this.mouse.x = event.clientX;
-                        this.mouse.y = event.clientY;
-                });
-
-                window.addEventListener("click", event => {
-                        if (!(event.target instanceof Node)) {
-                                return;
-                        }
-
-                        if (!this.element.contains(event.target)) {
-                                return;
-                        }
-
-                        for (const clickCallback of this.clickCallbacks) {
-                                clickCallback();
-                        }
-                });
-        }
-
-        onClick(callback: () => void) {
-                this.clickCallbacks.push(callback);
         }
 
         startRunning() {
@@ -120,21 +95,25 @@ export class Canvas2D {
                 this.context.fillRect(0, 0, this.width, this.height);
 
                 this.context.save();
-                this.camera.project();
-
-                const bounds = this.element.getBoundingClientRect();
-                const scaleX = this.element.width / bounds.width;
-                const scaleY = this.element.height / bounds.height;
-                const canvasMouse = new Vector2D(
-                        (this.mouse.x - bounds.left) * scaleX,
-                        (this.mouse.y - bounds.top) * scaleY
-                );
+                this.camera.project(this.context);
 
                 const matrix = this.context.getTransform().inverse();
-                this.cursor = this.transformPosition(matrix, canvasMouse);
+                this.mouse.mapPosition((position: Vector2D) => {
+                const bounds = this.element.getBoundingClientRect();
+                        const scaleX = this.element.width / bounds.width;
+                        const scaleY = this.element.height / bounds.height;
+                        const canvasPosition = new Vector2D(
+                                (position.x - bounds.left) * scaleX,
+                                (position.y - bounds.top) * scaleY
+                        );
 
-                this.background.render();
-                this.player.render();
+                        const worldPosition = this.transformPosition(matrix, canvasPosition);
+                        position.x = worldPosition.x;
+                        position.y = worldPosition.y;
+                });
+
+                this.background.render(this.context);
+                this.player.render(this.context);
 
                 this.context.restore();
 
