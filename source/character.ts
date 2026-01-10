@@ -116,7 +116,7 @@ export class Character extends Entity2D {
                 this.eyesScale = 1;
                 this.scheduleBlink();
 
-                window.addEventListener("click", () => {
+                this.canvas.onClick(() => {
                         if (this.targetSwingAngle === 120) {
                                 this.targetSwingAngle = 0;
                         } else {

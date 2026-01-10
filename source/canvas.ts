@@ -15,7 +15,8 @@ export class Canvas2D {
         public outliner: Outliner;
         public player: Character;
 
-        private currentTime: number;
+        private currentTime: number = 0;
+        private clickCallbacks: (() => void)[] = [];
 
         constructor() {
                 this.element = document.querySelector<HTMLCanvasElement>("#canvas")!;
@@ -41,14 +42,30 @@ export class Canvas2D {
                 this.outliner = new Outliner();
                 this.player = new Character(this);
 
-                this.currentTime = 0;
-
                 this.mouse = Vector2D.zero();
                 this.cursor = Vector2D.zero();
                 window.addEventListener("mousemove", event => {
                         this.mouse.x = event.clientX;
                         this.mouse.y = event.clientY;
                 });
+
+                window.addEventListener("click", event => {
+                        if (!(event.target instanceof Node)) {
+                                return;
+                        }
+
+                        if (!this.element.contains(event.target)) {
+                                return;
+                        }
+
+                        for (const clickCallback of this.clickCallbacks) {
+                                clickCallback();
+                        }
+                });
+        }
+
+        onClick(callback: () => void) {
+                this.clickCallbacks.push(callback);
         }
 
         startRunning() {
