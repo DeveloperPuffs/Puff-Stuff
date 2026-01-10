@@ -3,6 +3,17 @@ import { SliderElement } from "./elements/slider";
 import { ColorPickerElement } from "./elements/color_picker";
 
 import spritesData from "./sprites.json";
+
+export type Metadata = {
+        type: "none" | "hat" | "weapon";
+        offset?: {
+                x: number;
+                y: number
+        };
+};
+
+const textures: Map<string, Texture> = new Map();
+const metadata: Map<string, Metadata> = new Map();
 export class Texture {
         private static RESOLUTION = 4;
         private static parser = new DOMParser();
@@ -36,6 +47,10 @@ export class Texture {
                 return outlined && this.hasOutline ? this.outlinedImage! : this.rasterizedImage;
         }
 
+        getMetadata() {
+                return metadata.get(this.path)!;
+        }
+
         async load() {
                 const response = await fetch(this.path);
                 const text = await response.text();
@@ -47,9 +62,16 @@ export class Texture {
                 this.svgElement = parsed.documentElement;
                 this.width = Number(this.svgElement.getAttribute("width")!);
                 this.height = Number(this.svgElement.getAttribute("height")!);
-                this.rasterize();
+
+                this.rasterizedImage = new Image();
+                this.rasterizedImage.width = this.width * Texture.RESOLUTION;
+                this.rasterizedImage.height = this.height * Texture.RESOLUTION;
 
                 if (this.hasOutline) {
+                        this.outlinedImage = new Image();
+                        this.outlinedImage.width = this.width * Texture.RESOLUTION;
+                        this.outlinedImage.height = this.height * Texture.RESOLUTION;
+
                         const outlineColorPicker = document.querySelector<ColorPickerElement>("#outline-color-picker")!;
                         outlineColorPicker.addEventListener("input", () => {
                                 this.outline();
@@ -60,6 +82,8 @@ export class Texture {
                                 this.outline();
                         });
                 }
+
+                this.rasterize();
         }
 
         async rasterize() {
@@ -81,15 +105,14 @@ export class Texture {
                         image.width = this.width * Texture.RESOLUTION;
                         image.height = this.height * Texture.RESOLUTION;
 
-                        this.rasterizedImage = await new Promise<HTMLImageElement>((resolve, reject) => {
-                                image.onload = () => {
-                                        URL.revokeObjectURL(url);
-                                        resolve(image);
-                                };
-
+                        await new Promise((resolve, reject) => {
+                                image.onload = resolve;
                                 image.onerror = reject;
                                 image.src = url;
                         });
+
+                        this.rasterizedImage.src = image.src;
+                        URL.revokeObjectURL(url);
 
                         if (this.hasOutline) {
                                 this.outline();
@@ -117,12 +140,15 @@ export class Texture {
                         const outlineColorPicker = document.querySelector<ColorPickerElement>("#outline-color-picker")!;
                         const outlineThicknessSlider = document.querySelector<SliderElement>("#outline-thickness")!;
                         const outlined = this.outliner!.process(
-                                this.rasterizedImage.width,
-                                this.rasterizedImage.height,
+                                this.width,
+                                this.height,
                                 outlineColorPicker.color,
                                 outlineThicknessSlider.value,
                                 (context: CanvasRenderingContext2D) => {
-                                        context.drawImage(this.rasterizedImage, 0, 0);
+                                        // Add padding so that the outline dosen't clip outside of the image
+                                        const width = this.width * 0.75;
+                                        const height = this.height * 0.75;
+                                        context.drawImage(this.rasterizedImage, -width / 2, -height / 2, width, height);
                                 }
                         );
 
@@ -132,35 +158,19 @@ export class Texture {
                         image.width = this.width * Texture.RESOLUTION;
                         image.height = this.height * Texture.RESOLUTION;
 
-                        this.outlinedImage = await new Promise<HTMLImageElement>((resolve, reject) => {
-                                image.onload = () => {
-                                        URL.revokeObjectURL(url);
-                                        resolve(image);
-                                };
-
+                        await new Promise((resolve, reject) => {
+                                image.onload = resolve;
                                 image.onerror = reject;
                                 image.src = url;
                         });
+
+                        this.outlinedImage!.src = image.src;
+                        URL.revokeObjectURL(url);
                 }
 
                 this.outlining = false;
         }
 }
-
-export enum TextureIdentifier {
-        BODY = "body.svg",
-        HAND = "hand.svg",
-
-        EYES = "eyes.svg",
-
-        MOUTH = "mouth.svg",
-
-        SWORD = "sword.svg",
-
-        PROPELLER_HAT = "propeller_hat.svg"
-}
-
-const textures: Map<string, Texture> = new Map();
 
 export async function loadTextures() {
         textures.clear();
@@ -175,9 +185,16 @@ export async function loadTextures() {
                 await texture.load();
 
                 textures.set(spriteData.path, texture);
+
+                if (spriteData.metadata !== undefined) {
+                        metadata.set(spriteData.path, {
+                                type: spriteData.metadata.type as Metadata["type"],
+                                offset: spriteData.metadata.offset
+                        });
+                }
         }
 }
 
-export function getTexture(identifier: TextureIdentifier) {
-        return textures.get(identifier)!;
+export function getTexture(path: string) {
+        return textures.get(path)!;
 }

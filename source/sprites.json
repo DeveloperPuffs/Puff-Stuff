@@ -2,68 +2,116 @@
         {
                 "name": "Body",
                 "path": "body.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
                 "outline": false
         },
         {
                 "name": "Mouth",
                 "path": "mouth.svg",
-                "width": 50,
-                "height": 25,
-                "resolution": 4,
                 "outline": false
         },
         {
                 "name": "Hand",
                 "path": "hand.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
                 "outline": false
         },
 
         {
                 "name": "Eyes",
                 "path": "eyes.svg",
-                "width": 160,
-                "height": 120,
-                "resolution": 4,
                 "outline": false
         },
 
         {
                 "name": "Sword",
                 "path": "sword.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
-                "outline": true
+                "outline": true,
+                "metadata": {
+                        "type": "weapon",
+                        "offset": {
+                                "x": 0,
+                                "y": 0
+                        }
+                }
+        },
+        {
+                "name": "Spear",
+                "path": "spear.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "weapon",
+                        "offset": {
+                                "x": 0,
+                                "y": 0
+                        }
+                }
         },
 
         {
+                "name": "No Hat",
+                "path": "hats/no_hat.svg",
+                "outline": false,
+                "metadata": {
+                        "type": "none"
+                }
+        },
+        {
                 "name": "Top Hat",
-                "path": "top_hat.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
-                "outline": true
+                "path": "hats/top_hat.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "hat",
+                        "offset": {
+                                "x": 0,
+                                "y": -20
+                        }
+                }
         },
         {
                 "name": "Baseball Cap",
-                "path": "baseball_cap.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
-                "outline": true
+                "path": "hats/baseball_cap.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "hat",
+                        "offset": {
+                                "x": -24,
+                                "y": 0
+                        }
+                }
         },
         {
                 "name": "Propeller Hat",
-                "path": "propeller_hat.svg",
-                "width": 256,
-                "height": 256,
-                "resolution": 4,
-                "outline": true
+                "path": "hats/propeller_hat.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "hat",
+                        "offset": {
+                                "x": -24,
+                                "y": -24
+                        }
+                }
+        },
+        {
+                "name": "Christmas Hat",
+                "path": "hats/christmas_hat.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "hat",
+                        "offset": {
+                                "x": 16,
+                                "y": 0
+                        }
+                }
+        },
+        {
+                "name": "Wizard Hat",
+                "path": "hats/wizard_hat.svg",
+                "outline": true,
+                "metadata": {
+                        "type": "hat",
+                        "offset": {
+                                "x": 0,
+                                "y": -20
+                        }
+                }
         }
 ]

@@ -1,5 +1,3 @@
-- Accessory switcher
-- Weapon switcher
 - Spear, bow, gun, wand behaviors
 - Background music
 - UI sounds

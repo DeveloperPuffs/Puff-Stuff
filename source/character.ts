@@ -1,9 +1,10 @@
-import { Texture, TextureIdentifier, getTexture } from "./textures";
+import { Texture, getTexture } from "./textures";
 import { ColorPickerElement } from "./elements/color_picker";
 import { SliderElement } from "./elements/slider";
-import { Vector2D, Rectangle2D } from "./math";
+import { Vector2D } from "./math";
 import { Entity2D } from "./physics";
 import { Canvas2D } from "./canvas";
+import { SpriteSelectorElement } from "./elements/sprite_selector";
 
 enum Direction {
         LEFT,
@@ -17,6 +18,7 @@ enum State {
 export class Character extends Entity2D {
         private static WIDTH = 50;
         private static HEIGHT = 50;
+        private static LOOK_FACTOR = 2;
 
         private state: State;
         private direction: Direction;
@@ -42,7 +44,8 @@ export class Character extends Entity2D {
         private targetSwingAngle: number = 0;
         private swingVelocity: number = 0;
 
-        private hat: Texture | undefined = undefined;
+        private hat: Texture;
+        private hatScale: Vector2D;
 
         constructor(private canvas: Canvas2D) {
                 super(0, 0, Character.WIDTH, Character.HEIGHT);
@@ -81,10 +84,10 @@ export class Character extends Entity2D {
                         this.name = nameInput.value;
                 });
 
-                this.body = getTexture(TextureIdentifier.BODY);
-                this.eyes = getTexture(TextureIdentifier.EYES);
-                this.mouth = getTexture(TextureIdentifier.MOUTH);
-                this.hand = getTexture(TextureIdentifier.HAND);
+                this.body = getTexture("body.svg");
+                this.eyes = getTexture("eyes.svg");
+                this.mouth = getTexture("mouth.svg");
+                this.hand = getTexture("hand.svg");
 
                 const bodyColorPicker = document.querySelector<ColorPickerElement>("#body-color-picker")!;
                 bodyColorPicker.addEventListener("input", () => {
@@ -126,8 +129,17 @@ export class Character extends Entity2D {
                 this.scale = new Vector2D(1, 1);
                 this.wobble = new Vector2D(1, 1);
 
-                this.sword = getTexture(TextureIdentifier.SWORD);
-                this.hat = getTexture(TextureIdentifier.PROPELLER_HAT);
+                this.sword = getTexture("sword.svg");
+
+                const hatSelector = document.querySelector<SpriteSelectorElement>("#hat-selector")!;
+                this.hat = hatSelector.sprite;
+
+                this.hatScale = new Vector2D(1, 1);
+                hatSelector.addEventListener("change", () => {
+                        this.hat = hatSelector.sprite;
+                        this.hatScale.x += 0.25;
+                        this.hatScale.y += 0.25;
+                });
         }
 
         scheduleBlink() {
@@ -151,7 +163,7 @@ export class Character extends Entity2D {
 
                         this.eyesScale = elapsed < duration / 2
                                 ? 1 - (elapsed * 2 / duration)
-                                : (elapsed * 2 - duration) / duration
+                                : (elapsed * 2 - duration) / duration;
 
                         requestAnimationFrame(blinkFrame);
                 };
@@ -175,6 +187,9 @@ export class Character extends Entity2D {
 
                 this.scale.x += (1 - this.scale.x) * 0.1;
                 this.scale.y += (1 - this.scale.y) * 0.1;
+
+                this.hatScale.x += (1 - this.hatScale.x) * 0.1;
+                this.hatScale.y += (1 - this.hatScale.y) * 0.1;
 
                 const currentTime = Date.now();
 
@@ -304,8 +319,8 @@ export class Character extends Entity2D {
                         this.body.height
                 );
 
-                const lookX = (this.canvas.cursor.x - this.x) / this.w;
-                const lookY = (this.canvas.cursor.y - this.y) / this.h;
+                const lookX = (this.canvas.cursor.x - this.x) / this.w * Character.LOOK_FACTOR;
+                const lookY = (this.canvas.cursor.y - this.y) / this.h * Character.LOOK_FACTOR;
 
                 context.drawImage(
                         this.eyes.getImage(false),
@@ -325,16 +340,23 @@ export class Character extends Entity2D {
 
                 context.restore();
 
-                context.save();
-                context.scale(this.direction === Direction.RIGHT ? -1 : 1, 1);
-                context.drawImage(
-                        this.hat!.getImage(false),
-                        -this.hat!.width / 2 - this.hand.width / 4,
-                        -this.hat!.height / 2 - this.body.height / 2,
-                        this.hat!.width,
-                        this.hat!.height
-                );
-                context.restore();
+                const hatMetadata = this.hat.getMetadata();
+                if (hatMetadata.type !== "none") {
+                        context.save();
+                        context.scale(
+                                this.hatScale.x * (this.direction === Direction.RIGHT ? -1 : 1),
+                                this.hatScale.y
+                        );
+
+                        context.drawImage(
+                                this.hat.getImage(false),
+                                -this.hat.width / 2 + hatMetadata.offset!.x,
+                                -this.hat.height / 2 - this.body.height / 2 + hatMetadata.offset!.y,
+                                this.hat.width,
+                                this.hat.height
+                        );
+                        context.restore();
+                }
 
                 if (this.direction === Direction.RIGHT) {
                         this.renderHand(context, Direction.RIGHT);

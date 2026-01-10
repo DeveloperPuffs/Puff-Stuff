@@ -1,0 +1,27 @@
+@import "./../variables.css";
+
+sprite-selector-element > .control {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--image-size), auto));
+        justify-content: start;
+        gap: var(--small-spacing);
+        margin-bottom: var(--medium-spacing);
+}
+
+sprite-selector-element > .control > img {
+        object-fit: contain;
+        background-color: var(--light-background-color);
+        border-radius: var(--medium-radius);
+        width: var(--image-size);
+        height: var(--image-size);
+        user-select: none;
+        cursor: pointer;
+}
+
+sprite-selector-element > .control > img:hover {
+        background-color: var(--lighter-background-color);
+}
+
+sprite-selector-element > .control > img.selected {
+        border: 2px solid var(--lightest-background-color);
+}

@@ -33,18 +33,20 @@ tippy("[data-tippy-content]", {
         }
 });
 
+import { loadTextures } from "./textures";
+
+await loadTextures();
+
 import { SliderElement } from "./elements/slider";
 import { DropdownElement } from "./elements/dropdown";
 import { ColorPickerElement } from "./elements/color_picker";
+import { SpriteSelectorElement } from "./elements/sprite_selector";
 import { Canvas2D } from "./canvas";
 
 SliderElement.define();
 DropdownElement.define();
 ColorPickerElement.define();
-
-import { loadTextures } from "./textures";
-
-await loadTextures();
+SpriteSelectorElement.define();
 
 // window.addEventListener("contextmenu", event => {
 //         event.preventDefault();
