@@ -4,6 +4,9 @@ sprite-selector-element {
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: var(--medium-spacing);
+        background-color: var(--light-background-color);
+        padding: var(--small-spacing);
 }
 
 sprite-selector-element > .sprite-grid {
@@ -33,6 +36,19 @@ sprite-selector-element > .sprite-grid > img.selected {
 }
 
 sprite-selector-element > .sprite-editor {
+        display: flex;
+        width: 100%;
+        gap: var(--medium-spacing);
+}
+
+sprite-selector-element > .sprite-editor > .canvas-wrapper {
         width: 200px;
         height: 200px;
+        background-color: var(--darker-background-color);
+}
+
+sprite-selector-element > .sprite-editor > .sprite-options {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
 }

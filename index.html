@@ -12,24 +12,23 @@
                 <main class="editing">
                         <div id="editor">
                                 <ol id="stepper">
-                                        <!-- TODO: Controls step? -->
-                                        <li id="general-icon" class="locked icon" data-tippy-content="General Information">
+                                        <li id="general-icon" class="icon" data-tippy-content="General Information">
                                                 <i class="fa-solid fa-info"></i>
                                         </li>
-                                        <li id="appearance-icon" class="locked icon" data-tippy-content="Appearance">
+                                        <li id="appearance-icon" class="icon" data-tippy-content="Appearance">
                                                 <i class="fa-solid fa-face-smile"></i>
                                         </li>
-                                        <li id="accessories-icon" class="locked icon" data-tippy-content="Accessories">
+                                        <li id="accessories-icon" class="icon" data-tippy-content="Accessories">
                                                 <i class="fa-solid fa-masks-theater"></i>
                                         </li>
-                                        <li id="weapons-icon" class="locked icon" data-tippy-content="Weapons">
+                                        <li id="weapons-icon" class="icon" data-tippy-content="Weapons">
                                                 <i class="fa-solid fa-hand-fist"></i>
                                         </li>
-                                        <li id="options-icon" class="locked icon" data-tippy-content="Options">
+                                        <li id="options-icon" class="icon" data-tippy-content="Options">
                                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                                         </li>
-                                        <li id="review-icon" class="locked icon" data-tippy-content="Review">
-                                                <i class="fa-solid fa-check"></i>
+                                        <li id="export-icon" class="icon" data-tippy-content="Export">
+                                                <i class="fa-solid fa-file-export"></i>
                                         </li>
                                 </ol>
                                 <div id="scroller">
@@ -64,8 +63,8 @@
                                                                                 rows="3"
                                                                         ></textarea>
                                                                 </labeled-element>
-                                                                <button class="proceed">Proceed</button>
                                                         </div>
+                                                        <button class="footer proceed">Proceed</button>
                                                 </div>
                                                 <div id="appearance-content" class="step">
                                                         <div class="title">Appearance</div>
@@ -94,8 +93,8 @@
                                                                                 #6FB7B1
                                                                         </color-picker-element>
                                                                 </labeled-element>
-                                                                <button class="proceed">Proceed</button>
                                                         </div>
+                                                        <button class="footer proceed">Proceed</button>
                                                 </div>
                                                 <div id="accessories-content" class="step">
                                                         <div class="title">Accessories</div>
@@ -115,25 +114,27 @@
                                                                                 headwear/upload_headwear.svg
                                                                         </sprite-selector-element>
                                                                 </labeled-element>
-                                                                <button class="proceed">Proceed</button>
                                                         </div>
+                                                        <button class="footer proceed">Proceed</button>
                                                 </div>
                                                 <div id="weapons-content" class="step">
                                                         <div class="title">Weapons</div>
                                                         <div class="scroller">
-                                                                <labeled-element value="Weapon">
+                                                                <labeled-element label="Weapon">
                                                                         <sprite-selector-element
+                                                                                type="weapon"
                                                                                 id="weapon-selector"
                                                                                 value="weapons/no_weapon.svg"
                                                                         >
                                                                                 weapons/no_weapon.svg,
                                                                                 weapons/sword.svg,
                                                                                 weapons/spear.svg,
-                                                                                weapons/staff.svg
+                                                                                weapons/staff.svg,
+                                                                                weapons/upload_weapon.svg
                                                                         </sprite-selector-element>
                                                                 </labeled-element>
-                                                                <button class="proceed">Proceed</button>
                                                         </div>
+                                                        <button class="footer proceed">Proceed</button>
                                                 </div>
                                                 <div id="options-content" class="step">
                                                         <div class="title">Options</div>
@@ -163,14 +164,82 @@
                                                                                 id="outline-color-picker"
                                                                         ></color-picker-element>
                                                                 </labeled-element>
-                                                                <button class="proceed">Proceed</button>
                                                         </div>
+                                                        <button class="footer proceed">Proceed</button>
                                                 </div>
-                                                <div id="review-content" class="step">
-                                                        <div class="title">Review</div>
-                                                        <div class="scroller">
-                                                                <span>Coming Soon</span><br>
-                                                                <button class="proceed">Proceed</button>
+                                                <div id="export-content" class="step">
+                                                        <div class="title">Export</div> 
+                                                        <div class="wrapper">
+                                                                <div id="export-preview-panel">
+                                                                        <div class="title">Export Preview</div>
+                                                                        <div id="export-preview-wrapper">
+                                                                                <img id="export-preview">
+                                                                        </div>
+                                                                        <labeled-element for="file-name-input" label="File Name">
+                                                                                <input
+                                                                                        id="file-name-input"
+                                                                                        type="text"
+                                                                                        placeholder="image"
+                                                                                        value="image"
+                                                                                        spellcheck="false"
+                                                                                >
+                                                                        </labeled-element>
+                                                                        <button id="download">Download</button>
+                                                                </div>
+                                                                <div id="export-scroller">
+                                                                        <labeled-element label="Background Color">
+                                                                                <color-picker-element
+                                                                                        color="#00000000"
+                                                                                        format="rgba"
+                                                                                        id="background-color-picker"
+                                                                                ></color-picker-element>
+                                                                        </labeled-element>
+                                                                        <labeled-element for="resolution-dropdown" label="Resolution" inline-label margin="less">
+                                                                                <dropdown-element id="resolution-input" input-id="resolution-dropdown" value="256x256">
+                                                                                        512x512,
+                                                                                        256x256,
+                                                                                        128x128,
+                                                                                        64x64,
+                                                                                        32x32,
+                                                                                        16x16 (lol)
+                                                                                </dropdown-element>
+                                                                        </labeled-element>
+                                                                        <labeled-element label="Padding" inline-label margin="less">
+                                                                                <slider-element
+                                                                                        id="padding-slider"
+                                                                                        minimum="0"
+                                                                                        maximum="0.5"
+                                                                                        value="0.1"
+                                                                                        step="0.01"
+                                                                                ></slider-element>
+                                                                        </labeled-element>
+                                                                        <labeled-element for="include-name-toggle" label="Include Name" inline-label margin="less">
+                                                                                <toggle-element id="include-name" input-id="include-name-toggle" state="false"></toggle-element>
+                                                                        </labeled-element>
+                                                                        <labeled-element for="include-hands-toggle" label="Include Hands" inline-label>
+                                                                                <toggle-element id="include-hands" input-id="include-hands-toggle" state="true"></toggle-element>
+                                                                        </labeled-element>
+                                                                        <labeled-element label="Focus Position">
+                                                                                <labeled-element label="x" inline-label margin="least">
+                                                                                        <slider-element
+                                                                                                id="x-focus-position-slider"
+                                                                                                minimum="-500"
+                                                                                                maximum="500"
+                                                                                                value="100"
+                                                                                                step="1"
+                                                                                        ></slider-element>
+                                                                                </labeled-element>
+                                                                                <labeled-element label="y" inline-label margin="least">
+                                                                                        <slider-element
+                                                                                                id="y-focus-position-slider"
+                                                                                                minimum="-500"
+                                                                                                maximum="500"
+                                                                                                value="100"
+                                                                                                step="1"
+                                                                                        ></slider-element>
+                                                                                </labeled-element>
+                                                                        </labeled-element>
+                                                                </div>
                                                         </div>
                                                 </div>
                                         </div>
@@ -204,7 +273,15 @@
                 </template>
                 <template id="sprite-selector-template">
                         <div class="sprite-grid"></div>
-                        <div class="sprite-editor"></div>
+                        <div class="sprite-editor">
+                                <div class="canvas-wrapper"></div>
+                                <div class="sprite-options">
+                                        <div>Image Options</div><br>
+                                        <labeled-element label="Name">
+                                                <input type="text" spellcheck="false">
+                                        </labeled-element>
+                                </div>
+                        </div>
                 </template>
                 <script src="source/index.js" type="module" defer></script>
         </body>

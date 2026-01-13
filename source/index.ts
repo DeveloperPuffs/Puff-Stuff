@@ -36,7 +36,7 @@ import { loadTextures } from "./textures";
 
 await loadTextures();
 
-import { LabeledElement } from "./elements/labeled.js";
+import { LabeledElement } from "./elements/labeled";
 import { ToggleElement } from "./elements/toggle";
 import { SliderElement } from "./elements/slider";
 import { DropdownElement } from "./elements/dropdown";
@@ -51,6 +51,8 @@ DropdownElement.define();
 ColorPickerElement.define();
 SpriteSelectorElement.define();
 
+import { Exporter2D } from "./exporter";
+
 if (import.meta.env.DEV) {
         // Disable right clicking to open the context menu only in the build
         window.addEventListener("contextmenu", event => {
@@ -61,13 +63,15 @@ if (import.meta.env.DEV) {
 const canvas = new Canvas2D();
 canvas.startRunning();
 
+const exporter = new Exporter2D();
+
 enum Step {
         GENERAL = "general",
         APPEARANCE = "appearance",
         ACCESSORIES = "accessories",
         WEAPONS = "weapons",
         OPTIONS = "options",
-        REVIEW = "review"
+        EXPORT = "export"
 }
 
 const stepOrder = Object.freeze([
@@ -76,7 +80,7 @@ const stepOrder = Object.freeze([
         Step.ACCESSORIES,
         Step.WEAPONS,
         Step.OPTIONS,
-        Step.REVIEW
+        Step.EXPORT
 ] as const);
 
 let currentStep: Step | undefined = undefined;
@@ -88,7 +92,6 @@ function presentStep(step: Step) {
         }
 
         const icon = document.querySelector<HTMLLIElement>(`#${step}-icon`)!;
-        icon.classList.remove("locked");
         icon.classList.add("active");
 
         moveTrackTo(step, true);
@@ -147,30 +150,27 @@ document.querySelectorAll<HTMLButtonElement>("button.proceed").forEach(proceedBu
                         nextStep = Step.OPTIONS;
                         break;
                 case Step.OPTIONS:
-                        nextStep = Step.REVIEW;
+                        nextStep = Step.EXPORT;
                         break;
-                case Step.REVIEW:
+                case Step.EXPORT:
                         // Done
                         break;
         }
 
         proceedButton.addEventListener("click", () => {
-                presentStep(nextStep);
+                // Trigger a click to the corresponding icon so that I can listen for
+                // clicks on the icon elements to detect when a step is being shown.
+                document.querySelector<HTMLLIElement>(`#${nextStep}-icon`)!.click();
         });
 });
 
-document.querySelector<HTMLOListElement>("#stepper")!.childNodes.forEach(child => {
-        if (!(child instanceof HTMLLIElement)) {
-                return;
-        }
-
-        const step = child.id.split("-")[0] as Step;
+document.querySelectorAll<HTMLLIElement>("#stepper > .icon").forEach(child => {
         child.addEventListener("click", () => {
-                if (child.classList.contains("locked") || child.classList.contains("active")) {
+                if (child.classList.contains("active")) {
                         return;
                 }
 
-                presentStep(step);
+                presentStep(child.id.split("-")[0] as Step);
         });
 });
 

@@ -1,7 +1,17 @@
 import { DEFAULT_TRANSFORM, getTexture, Metadata, Texture } from "../textures";
 import tippy from "tippy.js";
 import Konva from "konva";
+import { Vector2D } from "../math";
 
+type Metrics = {
+        reference: Texture;
+        referenceInFront: boolean;
+        referenceOffset: Vector2D;
+        offsetFromReference: Vector2D;
+        targetWidth: number;
+        targetHeight: number;
+        scale: number;
+};
 export class SpriteSelectorElement extends HTMLElement {
         static define() {
                 customElements.define("sprite-selector-element", SpriteSelectorElement);
@@ -9,18 +19,15 @@ export class SpriteSelectorElement extends HTMLElement {
 
         private upload!: HTMLImageElement;
         private grid!: HTMLDivElement;
-        private editor!: HTMLDivElement;
         private uploader: HTMLInputElement;
         private _sprite!: Texture;
 
-        private referenceWidth!: number;
-        private referenceHeight!: number;
-        private scale!: number;
+        private metrics!: Metrics;
 
         private stage!: Konva.Stage;
         private layer!: Konva.Layer;
         private editorGroup!: Konva.Group;
-        private templateImage!: Konva.Image;
+        private referenceImage!: Konva.Image;
         private spriteImage!: Konva.Image;
         private transformer!: Konva.Transformer;
 
@@ -55,7 +62,6 @@ export class SpriteSelectorElement extends HTMLElement {
                 this.replaceChildren(template.content.cloneNode(true));
 
                 this.grid = this.querySelector<HTMLDivElement>(".sprite-grid")!;
-                this.editor = this.querySelector<HTMLDivElement>(".sprite-editor")!;
 
                 for (const path of paths) {
                         const texture = getTexture(path);
@@ -91,6 +97,7 @@ export class SpriteSelectorElement extends HTMLElement {
                                 type: this.getAttribute("type") as Metadata["type"],
                                 name: file.name,
                                 outline: true,
+                                behavior: "sword",
                                 transform: {
                                         ...DEFAULT_TRANSFORM
                                 }
@@ -102,7 +109,7 @@ export class SpriteSelectorElement extends HTMLElement {
                         } else if (file.type.startsWith("image/")) {
                                 await texture.loadBitmap(file);
                         } else {
-                                window.alert("The image file is invalid. Please make sure you upload a valid \".png\"");
+                                window.alert("Invalid image file.");
                                 return;
                         }
 
@@ -119,59 +126,96 @@ export class SpriteSelectorElement extends HTMLElement {
                                 animation: "scale"
                         });
 
+                        const scaleX = this.metrics.targetWidth / texture.width;
+                        const scaleY = this.metrics.targetHeight / texture.height;
+                        const scale = Math.max(scaleX, scaleY);
+
+                        texture.metadata.transform.w = scale;
+                        texture.metadata.transform.h = scale;
+
                         this.selectTexture(texture);
                 });
-
-                const reference = getTexture("body.svg");
-                this.referenceWidth = reference.width;
-                this.referenceHeight = reference.height;
-                this.scale = 0.25 * Math.min(
-                        this.editor.clientWidth / this.referenceWidth,
-                        this.editor.clientHeight / this.referenceHeight
-                );
 
                 this.initializeEditor();
         }
 
         private initializeEditor() {
+                const canvasWrapper = this.querySelector<HTMLDivElement>(".sprite-editor > .canvas-wrapper")!;
+
+                const type = this.getAttribute("type");
+                switch (type) {
+                        case "headwear": {
+                                const reference = getTexture("reference.svg");
+                                const scale = 0.4 * Math.min(
+                                        canvasWrapper.clientWidth / reference.width,
+                                        canvasWrapper.clientHeight / reference.height
+                                );
+
+                                this.metrics = {
+                                        reference,
+                                        scale,
+                                        referenceInFront: false,
+                                        referenceOffset: new Vector2D(0, reference.height / 2 * scale),
+                                        offsetFromReference: new Vector2D(0, -reference.width / 2),
+                                        targetWidth: reference.height * 1.5,
+                                        targetHeight: reference.height / 1.5
+                                }
+
+                                break;
+                        }
+
+                        case "weapon": {
+                                const reference = getTexture("reference_hand.svg");
+                                const scale = 0.15 * Math.min(
+                                        canvasWrapper.clientWidth / reference.width,
+                                        canvasWrapper.clientHeight / reference.height
+                                );
+
+                                this.metrics = {
+                                        reference,
+                                        scale,
+                                        referenceInFront: true,
+                                        referenceOffset: new Vector2D(0, reference.height * 1.5 * scale),
+                                        offsetFromReference: Vector2D.zero(),
+                                        targetWidth: reference.width * 2,
+                                        targetHeight: reference.height * 5
+                                }
+
+                                break;
+                        }
+
+                        default:
+                                throw new Error(`Invalid sprite selector type: ${type}`);
+                }
+
                 this.stage = new Konva.Stage({
-                        container: this.editor,
-                        width: this.editor.clientWidth,
-                        height: this.editor.clientHeight
+                        container: canvasWrapper,
+                        width: canvasWrapper.clientWidth,
+                        height: canvasWrapper.clientHeight
                 });
 
                 this.layer = new Konva.Layer();
                 this.stage.add(this.layer);
 
                 this.editorGroup = new Konva.Group({
-                        x: this.stage.width() / 2,
-                        y: this.stage.height() / 2,
-                        scaleX: this.scale,
-                        scaleY: this.scale
+                        x: this.stage.width() / 2 + this.metrics.referenceOffset.x,
+                        y: this.stage.height() / 2 + this.metrics.referenceOffset.y,
+                        scaleX: this.metrics.scale,
+                        scaleY: this.metrics.scale
                 });
 
                 this.layer.add(this.editorGroup);
 
-                const templateImage = new Image();
-                templateImage.src = "templatepuffs.png";
-
-                this.templateImage = new Konva.Image({
-                        image: templateImage,
-                        x: -this.referenceWidth / 2,
-                        y: -this.referenceHeight / 2,
-                        width: this.referenceWidth,
-                        height: this.referenceHeight,
+                this.referenceImage = new Konva.Image({
+                        image: this.metrics.reference.getImage(false),
+                        x: -this.metrics.reference.width / 2,
+                        y: -this.metrics.reference.height / 2,
+                        width: this.metrics.reference.width,
+                        height: this.metrics.reference.height,
                         listening: false
                 });
 
-                this.editorGroup.add(this.templateImage);
-
-                const anchor = new Konva.Group({
-                        x: 0,
-                        y: -this.referenceHeight / 2
-                });
-
-                this.editorGroup.add(anchor);
+                const anchor = new Konva.Group(this.metrics.offsetFromReference);
 
                 this.spriteImage = new Konva.Image();
                 this.spriteImage.draggable(true);
@@ -207,19 +251,27 @@ export class SpriteSelectorElement extends HTMLElement {
 
                 const resizeObserver = new ResizeObserver(entries => {
                         for (const entry of entries) {
-                                if (entry.target !== this.editor) {
+                                if (entry.target !== canvasWrapper) {
                                         continue;
                                 }
 
-                                this.stage.width(this.editor.clientWidth);
-                                this.stage.height(this.editor.clientHeight);
+                                this.stage.width(canvasWrapper.clientWidth);
+                                this.stage.height(canvasWrapper.clientHeight);
                         }
                 });
 
-                resizeObserver.observe(this.editor);
+                resizeObserver.observe(canvasWrapper);
 
                 this.spriteImage.visible(false);
                 this.transformer.visible(false);
+
+                if (this.metrics.referenceInFront) {
+                        this.editorGroup.add(anchor);
+                        this.editorGroup.add(this.referenceImage);
+                } else {
+                        this.editorGroup.add(this.referenceImage);
+                        this.editorGroup.add(anchor);
+                }
         }
 
         private synchronizeTransform = () => {

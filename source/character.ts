@@ -4,7 +4,7 @@ import { SpriteSelectorElement } from "./elements/sprite_selector";
 import { SliderElement } from "./elements/slider";
 import { Vector2D } from "./math";
 import { Entity2D } from "./physics";
-import { Canvas2D } from "./canvas";
+import { Outliner } from "./outliner";
 
 enum Direction {
         LEFT,
@@ -54,6 +54,23 @@ function createJab(): Jab {
         }
 }
 
+export interface CharacterContext {
+        onVisibilityChange: (callback: (visibility: boolean) => void) => void;
+
+        onClick: (callback: () => void) => void;
+        cursorPosition: Vector2D;
+
+        checkKeys: (keys: string) => boolean;
+        onKeyPress: (keys: string, callback: (key: string) => void) => void;
+        onKeyRelease: (keys: string, callback: (key: string) => void) => void;
+
+        snapCamera: (position: Vector2D) => void;
+        focusCamera: (position: Vector2D) => void;
+        shakeCamera: (amount: number) => void;
+
+        outliner: Outliner;
+}
+
 export class Character extends Entity2D {
         private static WIDTH = 50;
         private static HEIGHT = 50;
@@ -84,6 +101,8 @@ export class Character extends Entity2D {
         private targetArmAngleRange: number = Character.IDLE_ARM_ANGLE_RANGE;
         private leftShoulderOffset: Vector2D = Vector2D.zero();
         private rightShoulderOffset: Vector2D = Vector2D.zero();
+        private leftArmAngle: number = 0;
+        private rightArmAngle: number = 0;
 
         private weapon: Texture;
         private weaponBehavior?: Swing | Jab = undefined;
@@ -92,7 +111,11 @@ export class Character extends Entity2D {
         private headwear: Texture;
         private headwearScale: Vector2D = new Vector2D(1, 1);
 
-        constructor(private canvas: Canvas2D) {
+        public includeName: boolean = true;
+        public includeHands: boolean = true;
+        public frozenState: boolean = false;
+
+        constructor(private context: CharacterContext) {
                 super(0, 0, Character.WIDTH, Character.HEIGHT);
 
                 const nameInput = document.querySelector<HTMLInputElement>("#name-input")!;
@@ -138,7 +161,7 @@ export class Character extends Entity2D {
 
                 this.scheduleBlink();
 
-                this.canvas.onClick(() => {
+                this.context.onClick(() => {
                         switch (this.weaponBehavior?.type) {
                                 case "swing": {
                                         const swing = this.weaponBehavior;
@@ -167,7 +190,7 @@ export class Character extends Entity2D {
                                         return;
                         }
 
-                        this.canvas.camera.shake(10);
+                        this.context.shakeCamera(10);
                 });
 
                 const headwearSelector = document.querySelector<SpriteSelectorElement>("#headwear-selector")!;
@@ -200,6 +223,13 @@ export class Character extends Entity2D {
 
                 this.weapon = weaponSelector.sprite;
                 this.weaponBehavior = undefined;
+
+                this.context.snapCamera(this);
+                this.context.onVisibilityChange(visible => {
+                        if (visible) {
+                                this.context.snapCamera(this);
+                        }
+                });
         }
 
         private scheduleBlink() {
@@ -232,10 +262,10 @@ export class Character extends Entity2D {
         }
 
         update(deltaTime: number) {
-                const w = this.canvas.checkKey("KeyW, ArrowUp");
-                const a = this.canvas.checkKey("KeyA, ArrowLeft");
-                const s = this.canvas.checkKey("KeyS, ArrowDown");
-                const d = this.canvas.checkKey("KeyD, ArrowRight");
+                const w = this.context.checkKeys("KeyW, ArrowUp");
+                const a = this.context.checkKeys("KeyA, ArrowLeft");
+                const s = this.context.checkKeys("KeyS, ArrowDown");
+                const d = this.context.checkKeys("KeyD, ArrowRight");
 
                 const h = Number(d) - Number(a);
                 const v = Number(s) - Number(w);
@@ -244,6 +274,8 @@ export class Character extends Entity2D {
                 this.acceleration.x = this.speed * h * diagonal;
                 this.acceleration.y = this.speed * v * diagonal;
                 super.update(deltaTime);
+
+                this.context.focusCamera(this);
 
                 this.scale.x += (1 - this.scale.x) * 0.1;
                 this.scale.y += (1 - this.scale.y) * 0.1;
@@ -262,9 +294,25 @@ export class Character extends Entity2D {
                         ? Character.RUNNING_ARM_ANGLE_RANGE
                         : Character.IDLE_ARM_ANGLE_RANGE;
                 this.currentArmAngleRange += 4 * (this.targetArmAngleRange - this.currentArmAngleRange) * deltaTime;
+                this.leftArmAngle = this.currentArmAngleRange * Math.sin((currentTime / 200) + Math.PI);
+                this.rightArmAngle = this.currentArmAngleRange * Math.sin((currentTime / 200));
 
                 this.wobble.x = 1 + Math.cos(currentTime / 200) / 40;
                 this.wobble.y = 1 + Math.sin(currentTime / 200) / 40;
+
+                if (this.frozenState) {
+                        this.scale.x = 1;
+                        this.scale.y = 1;
+                        this.headwearScale.x = 1;
+                        this.headwearScale.y = 1;
+                        this.weaponScale.x = 1;
+                        this.weaponScale.y = 1;
+                        this.wobble.x = 1;
+                        this.wobble.y = 1;
+                        this.eyesScale = 1;
+                        this.leftArmAngle = 0;
+                        this.rightArmAngle = 0;
+                }
 
                 switch (this.weaponBehavior?.type) {
                         case "swing": {
@@ -297,23 +345,34 @@ export class Character extends Entity2D {
                                 }
 
                                 jab.thrust = animateTip(jab.progress) * jab.distance;
-                                console.log(jab.thrust);
-
                                 break;
                         }
                 }
 
                 const deadzone = this.body.width / 20;
-                const distance = this.canvas.cursor.x - this.x;
+                const distance = this.context.cursorPosition.x - this.x;
                 if (Math.abs(distance) > deadzone) {
-                        const direction = distance < 0 ? Direction.LEFT : Direction.RIGHT;
-                        if (direction != this.direction) {
-                                this.scale.x += 0.05;
-                                this.scale.y += 0.05;
-                        }
-
-                        this.direction = direction;
+                        this.direction = distance < 0 ? Direction.LEFT : Direction.RIGHT;
                 }
+        }
+
+        private renderTexture(context: CanvasRenderingContext2D, texture: Texture, scale: Vector2D = new Vector2D(1, 1)) {
+                const transform = texture.metadata.transform;
+                const width = texture.width * scale.x;
+                const height = texture.height * scale.y;
+
+                context.save();
+                context.translate(transform.x, transform.y);
+                context.rotate(transform.r);
+                context.scale(transform.w, transform.h);
+
+                context.drawImage(
+                        texture.getImage(false),
+                        -width / 2, -height / 2,
+                        width, height
+                );
+
+                context.restore();
         }
 
         private renderSword(context: CanvasRenderingContext2D, direction: Direction) {
@@ -323,18 +382,13 @@ export class Character extends Entity2D {
                         ? swing.currentSwingAngle * Math.PI / 180
                         : -swing.currentSwingAngle * Math.PI / 180;
 
-                const swordWidth = this.weapon.width;
-                const swordHeight = this.weapon.height;
-                const swordOffsetX = 0;
-                const swordOffsetY = -this.weapon.height / 4;
-
                 const cursorAngle = Math.atan2(
-                        this.canvas.cursor.y - this.y,
-                        this.canvas.cursor.x - this.x
+                        this.context.cursorPosition.y - this.y,
+                        this.context.cursorPosition.x - this.x
                 );
 
                 const armAdvanceAngle = cursorAngle - Math.PI / 2;
-                const handShoulderDistance = this.body.height / 2;
+                const handShoulderDistance = this.body.height / 2.5;
                 const handOffsetX = Math.cos(armAdvanceAngle) * handShoulderDistance;
                 const handOffsetY = Math.sin(armAdvanceAngle) * handShoulderDistance;
 
@@ -350,15 +404,7 @@ export class Character extends Entity2D {
 
                 context.rotate(swingAngle - Math.PI / 2); // rotate the wrist by the swing angle
 
-                context.scale(this.weaponScale.x, this.weaponScale.y);
-
-                context.drawImage(
-                        this.weapon.getImage(false),
-                        -swordWidth / 2 + swordOffsetX,
-                        -swordHeight / 2 + swordOffsetY,
-                        swordWidth,
-                        swordHeight
-                );
+                this.renderTexture(context, this.weapon, this.weaponScale);
 
                 context.scale(this.wobble.x, this.wobble.y);
 
@@ -376,17 +422,12 @@ export class Character extends Entity2D {
         private renderSpear(context: CanvasRenderingContext2D, direction: Direction) {
                 const jab = this.weaponBehavior as Jab;
 
-                const swordWidth = this.weapon.width;
-                const swordHeight = this.weapon.height;
-                const swordOffsetX = 0;
-                const swordOffsetY = -this.weapon.height / 4;
-
                 const cursorAngle = Math.atan2(
-                        this.canvas.cursor.y - this.y,
-                        this.canvas.cursor.x - this.x
+                        this.context.cursorPosition.y - this.y,
+                        this.context.cursorPosition.x - this.x
                 );
 
-                const handShoulderDistance = this.body.height / 2 + jab.thrust;
+                const handShoulderDistance = this.body.height / 2.5 + jab.thrust;
                 const handOffsetX = Math.cos(cursorAngle) * handShoulderDistance;
                 const handOffsetY = Math.sin(cursorAngle) * handShoulderDistance;
 
@@ -400,15 +441,7 @@ export class Character extends Entity2D {
 
                 context.rotate(cursorAngle + Math.PI / 2);
 
-                context.scale(this.weaponScale.x, this.weaponScale.y);
-
-                context.drawImage(
-                        this.weapon.getImage(false),
-                        -swordWidth / 2 + swordOffsetX,
-                        -swordHeight / 2 + swordOffsetY,
-                        swordWidth,
-                        swordHeight
-                );
+                this.renderTexture(context, this.weapon, this.weaponScale);
 
                 context.scale(this.wobble.x, this.wobble.y);
 
@@ -424,6 +457,10 @@ export class Character extends Entity2D {
         }
 
         private renderHand(context: CanvasRenderingContext2D, direction: Direction) {
+                if (!this.includeHands) {
+                        return;
+                }
+        
                 if (this.direction !== direction) {
                         switch (this.weapon.metadata.behavior) {
                                 case "sword":
@@ -435,12 +472,8 @@ export class Character extends Entity2D {
                         }
                 }
 
-                const currentTime = Date.now();
-                const armAngle = direction === Direction.LEFT
-                                ? this.currentArmAngleRange * Math.sin((currentTime / 200) + Math.PI)
-                                : this.currentArmAngleRange * Math.sin((currentTime / 200));
-
-                const handShoulderDistance = this.body.height / 2;
+                const handShoulderDistance = this.body.height / 2.5;
+                const armAngle = direction === Direction.LEFT ? this.leftArmAngle : this.rightArmAngle;
                 const freeHandX = handShoulderDistance * Math.cos(armAngle + Math.PI / 2);
                 const freeHandY = handShoulderDistance * Math.sin(armAngle + Math.PI / 2);
 
@@ -481,8 +514,8 @@ export class Character extends Entity2D {
                         this.body.height
                 );
 
-                const lookX = (this.canvas.cursor.x - this.x) / this.w * Character.LOOK_FACTOR;
-                const lookY = (this.canvas.cursor.y - this.y) / this.h * Character.LOOK_FACTOR;
+                const lookX = (this.context.cursorPosition.x - this.x) / this.w * Character.LOOK_FACTOR;
+                const lookY = (this.context.cursorPosition.y - this.y) / this.h * Character.LOOK_FACTOR;
 
                 context.drawImage(
                         this.eyes.getImage(false),
@@ -503,23 +536,12 @@ export class Character extends Entity2D {
                 context.restore();
 
                 if (this.headwear.metadata.type === "headwear") {
-                        const transform = this.headwear.metadata.transform;
-
                         context.save();
 
                         context.scale(this.direction === Direction.RIGHT ? -1 : 1, 1);
-                        context.translate(transform.x, -this.body.height / 2 + transform.y);
+                        context.translate(0, -this.body.height / 2);
 
-                        context.rotate(transform.r);
-                        context.scale(transform.w * this.headwearScale.x, transform.h * this.headwearScale.y);
-
-                        context.drawImage(
-                                this.headwear.getImage(false),
-                                -this.headwear.width / 2,
-                                -this.headwear.height / 2,
-                                this.headwear.width,
-                                this.headwear.height
-                        );
+                        this.renderTexture(context, this.headwear, this.headwearScale);
 
                         context.restore();
 
@@ -553,7 +575,7 @@ export class Character extends Entity2D {
                 const BUFFER_WIDTH = this.body.width * 5;
                 const BUFFER_HEIGHT = this.body.height * 5;
 
-                const outlined = this.canvas.outliner.process(
+                const outlined = this.context.outliner.process(
                         BUFFER_WIDTH,
                         BUFFER_HEIGHT,
                         this.outlineColor,
@@ -576,7 +598,7 @@ export class Character extends Entity2D {
 
                 this.renderCharacter(context);
 
-                if (this.name !== "") {
+                if (this.includeName && this.name !== "") {
                         context.font = `${this.w}px \"Monaspace Radon\", monospace`;
 
                         const label = this.name.length <= 20 ? this.name : this.name.substring(0, 19) + "…";

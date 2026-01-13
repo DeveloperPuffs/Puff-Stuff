@@ -1,14 +1,12 @@
+- Message for controls shown on canvas
 - gun, staff, and throwing behaviors
 - Calculate character buffer size dynamically using body, accessories, and weapon sizes
 - Background music
 - UI sounds
 
-- User uploaded accessories and weapons
-- Export character
 - Character trail (customizable)
 - Add enemies
 - Allow switching models for color pickers
 - Add custom fields/inputs to the color picker
-- Add functions to help with vector math
 
 - Background music switcher

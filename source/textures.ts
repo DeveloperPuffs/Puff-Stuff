@@ -16,8 +16,10 @@ export const DEFAULT_TRANSFORM: Transform = {
         x: 0, y: 0, w: 1, h: 1, r: 0
 };
 
+export type TextureType = "none" | "upload" | "reference" | "headwear" | "weapon";
+
 export type Metadata = {
-        type: "none" | "upload" | "headwear" | "weapon";
+        type: TextureType;
         name: string;
         outline: boolean;
         transform: Transform;
@@ -138,7 +140,6 @@ export class Texture {
                 }
 
                 this.rasterizing = true;
-
                 while (this.rasterQueued) {
                         this.rasterQueued = false;
 
@@ -162,6 +163,8 @@ export class Texture {
                         if (this.outline) {
                                 this.outline();
                         }
+
+                        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
                 }
 
                 this.rasterizing = false;
@@ -182,7 +185,6 @@ export class Texture {
                 }
 
                 this.outlining = true;
-
                 while (this.outlineQueued) {
                         this.outlineQueued = false;
 
@@ -215,6 +217,8 @@ export class Texture {
 
                         this.outlinedImage!.src = image.src;
                         URL.revokeObjectURL(url);
+
+                        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
                 }
 
                 this.outlining = false;

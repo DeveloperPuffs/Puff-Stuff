@@ -7,7 +7,7 @@ export class ToggleElement extends HTMLElement {
         private _state: boolean = false;
 
         get state() {
-                return this.state;
+                return this._state;
         }
 
         set state(state: boolean) {

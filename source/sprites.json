@@ -26,6 +26,19 @@
         },
 
         {
+                "name": "Reference",
+                "path": "reference.svg",
+                "outline": false,
+                "type": "reference"
+        },
+        {
+                "name": "Reference Hand",
+                "path": "reference_hand.svg",
+                "outline": false,
+                "type": "reference"
+        },
+
+        {
                 "name": "No Weapon",
                 "path": "weapons/no_weapon.svg",
                 "outline": false,
@@ -36,21 +49,36 @@
                 "path": "weapons/sword.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "sword"
+                "behavior": "sword",
+                "transform": {
+                        "y": -80
+                }
         },
         {
                 "name": "Spear",
                 "path": "weapons/spear.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "spear"
+                "behavior": "spear",
+                "transform": {
+                        "y": -120
+                }
         },
         {
                 "name": "Staff",
                 "path": "weapons/staff.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "sword"
+                "behavior": "sword",
+                "transform": {
+                        "y": -80
+                }
+        },
+        {
+                "name": "Upload your Own Image!",
+                "path": "weapons/upload_weapon.svg",
+                "outline": false,
+                "type": "upload"
         },
 
         {
