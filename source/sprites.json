@@ -49,7 +49,7 @@
                 "path": "weapons/sword.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "sword",
+                "behavior": "Sword",
                 "transform": {
                         "y": -80
                 }
@@ -59,7 +59,7 @@
                 "path": "weapons/spear.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "spear",
+                "behavior": "Spear",
                 "transform": {
                         "y": -120
                 }
@@ -69,7 +69,7 @@
                 "path": "weapons/staff.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "sword",
+                "behavior": "Sword",
                 "transform": {
                         "y": -80
                 }
@@ -79,7 +79,7 @@
                 "path": "weapons/baseball_bat.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "sword",
+                "behavior": "Sword",
                 "transform": {
                         "y": -60
                 }
@@ -89,7 +89,7 @@
                 "path": "weapons/trident.svg",
                 "outline": true,
                 "type": "weapon",
-                "behavior": "spear",
+                "behavior": "Spear",
                 "transform": {
                         "y": -120
                 }

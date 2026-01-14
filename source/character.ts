@@ -6,6 +6,7 @@ import { Vector2D } from "./math";
 import { Entity2D } from "./physics";
 import { Outliner } from "./outliner";
 import { ToggleElement } from "./elements/toggle";
+import { DropdownElement } from "./elements/dropdown";
 
 enum Direction {
         LEFT,
@@ -221,23 +222,20 @@ export class Character extends Entity2D {
 
                 this.headwear = headwearSelector.sprite;
 
+                const weaponBehaviorDropdown = document.querySelector<DropdownElement>("#weapon-behavior")!;
+                weaponBehaviorDropdown.addEventListener("change", () => {
+                        this.weapon.metadata.behavior = weaponBehaviorDropdown.value;
+                        this.synchronizeWeaponBehavior();
+                });
+
                 const weaponSelector = document.querySelector<SpriteSelectorElement>("#weapon-selector")!;
                 weaponSelector.addEventListener("change", () => {
                         this.weapon = weaponSelector.sprite;
                         this.weaponScale.x += 0.1;
                         this.weaponScale.y += 0.1;
 
-                        switch (this.weapon.metadata.behavior) {
-                                case "sword":
-                                        this.weaponBehavior = createSwing();
-                                        break;
-                                case "spear":
-                                        this.weaponBehavior = createJab();
-                                        break;
-                                default:
-                                        this.weaponBehavior = undefined;
-                                        break;
-                        }
+                        weaponBehaviorDropdown.set(this.weapon.metadata.behavior!);
+                        this.synchronizeWeaponBehavior();
                 });
 
                 this.weapon = weaponSelector.sprite;
@@ -249,6 +247,20 @@ export class Character extends Entity2D {
                                 this.context.snapCamera(this);
                         }
                 });
+        }
+
+        private synchronizeWeaponBehavior() {
+                switch (this.weapon.metadata.behavior) {
+                        case "Sword":
+                                this.weaponBehavior = createSwing();
+                                break;
+                        case "Spear":
+                                this.weaponBehavior = createJab();
+                                break;
+                        default:
+                                this.weaponBehavior = undefined;
+                                break;
+                }
         }
 
         private scheduleBlink() {
@@ -485,13 +497,15 @@ export class Character extends Entity2D {
                 }
         
                 if (this.direction !== direction) {
-                        switch (this.weapon.metadata.behavior) {
-                                case "sword":
-                                        this.renderSword(context, direction);
-                                        return;
-                                case "spear":
-                                        this.renderSpear(context, direction);
-                                        return;
+                        if (this.weapon.metadata.type === "weapon") {
+                                switch (this.weapon.metadata.behavior) {
+                                        case "Sword":
+                                                this.renderSword(context, direction);
+                                                return;
+                                        case "Spear":
+                                                this.renderSpear(context, direction);
+                                                return;
+                                }
                         }
                 }
 

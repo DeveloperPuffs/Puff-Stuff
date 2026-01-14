@@ -27,6 +27,11 @@ export class DropdownElement extends HTMLElement {
                 this.dispatchEvent(new Event("change"));
         }
 
+        set(value: string) {
+                this._value = value;
+                this.button.textContent = value;
+        }
+
         connectedCallback() {
                 this.options = this.textContent
                         .trim()
