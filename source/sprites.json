@@ -75,6 +75,26 @@
                 }
         },
         {
+                "name": "Baseball Bat",
+                "path": "weapons/baseball_bat.svg",
+                "outline": true,
+                "type": "weapon",
+                "behavior": "sword",
+                "transform": {
+                        "y": -60
+                }
+        },
+        {
+                "name": "Trident",
+                "path": "weapons/trident.svg",
+                "outline": true,
+                "type": "weapon",
+                "behavior": "spear",
+                "transform": {
+                        "y": -120
+                }
+        },
+        {
                 "name": "Upload your Own Image!",
                 "path": "weapons/upload_weapon.svg",
                 "outline": false,
@@ -131,6 +151,24 @@
                 "type": "headwear",
                 "transform": {
                         "y": -20
+                }
+        },
+        {
+                "name": "Plant Hat",
+                "path": "headwear/plant_hat.svg",
+                "outline": true,
+                "type": "headwear",
+                "transform": {
+                        "y": -40
+                }
+        },
+        {
+                "name": "Birthday Hat",
+                "path": "headwear/birthday_hat.svg",
+                "outline": true,
+                "type": "headwear",
+                "transform": {
+                        "y": -60
                 }
         },
         {

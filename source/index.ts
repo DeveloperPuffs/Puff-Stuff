@@ -70,7 +70,7 @@ enum Step {
         APPEARANCE = "appearance",
         ACCESSORIES = "accessories",
         WEAPONS = "weapons",
-        OPTIONS = "options",
+        MISCELLANEOUS = "miscellaneous",
         EXPORT = "export"
 }
 
@@ -79,7 +79,7 @@ const stepOrder = Object.freeze([
         Step.APPEARANCE,
         Step.ACCESSORIES,
         Step.WEAPONS,
-        Step.OPTIONS,
+        Step.MISCELLANEOUS,
         Step.EXPORT
 ] as const);
 
@@ -147,9 +147,9 @@ document.querySelectorAll<HTMLButtonElement>("button.proceed").forEach(proceedBu
                         nextStep = Step.WEAPONS;
                         break;
                 case Step.WEAPONS:
-                        nextStep = Step.OPTIONS;
+                        nextStep = Step.MISCELLANEOUS;
                         break;
-                case Step.OPTIONS:
+                case Step.MISCELLANEOUS:
                         nextStep = Step.EXPORT;
                         break;
                 case Step.EXPORT:
