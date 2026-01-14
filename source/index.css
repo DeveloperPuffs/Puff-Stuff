@@ -248,7 +248,7 @@ main.editing > #canvas {
         height: 150px;
         outline: 2px solid var(--light-background-color);
         border-radius: var(--large-radius);
-        margin-bottom: var(--medium-spacing);
+        margin-bottom: var(--small-spacing);
 }
 
 #export-scroller {

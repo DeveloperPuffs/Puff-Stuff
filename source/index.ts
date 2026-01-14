@@ -170,4 +170,4 @@ document.querySelectorAll<HTMLLIElement>("#stepper > .icon").forEach(child => {
         });
 });
 
-presentStep(Step.GENERAL);
+presentStep(Step.WELCOME);
