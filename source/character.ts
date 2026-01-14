@@ -98,6 +98,7 @@ export class Character extends Entity2D {
         private eyes: Texture;
         private mouth: Texture;
         private hand: Texture;
+        private handsScale: Vector2D = new Vector2D(1, 1);
 
         private currentArmAngleRange: number = Character.IDLE_ARM_ANGLE_RANGE;
         private targetArmAngleRange: number = Character.IDLE_ARM_ANGLE_RANGE;
@@ -167,6 +168,15 @@ export class Character extends Entity2D {
                 this.enableOutline = outlineToggle.state;
                 this.outlineColor = outlineColorPicker.color;
                 this.outlineThickness = outlineThicknessSlider.value;
+
+                const handsSizeSlider = document.querySelector<SliderElement>("#hands-size")!;
+                handsSizeSlider.addEventListener("input", () => {
+                        this.handsScale.x = handsSizeSlider.value / 60;
+                        this.handsScale.y = handsSizeSlider.value / 60;
+                });
+
+                this.handsScale.x = handsSizeSlider.value / 60;
+                this.handsScale.y = handsSizeSlider.value / 60;
 
                 this.scheduleBlink();
 
@@ -416,6 +426,7 @@ export class Character extends Entity2D {
                 this.renderTexture(context, this.weapon, this.weaponScale);
 
                 context.scale(this.wobble.x, this.wobble.y);
+                context.scale(this.handsScale.x, this.handsScale.y);
 
                 context.drawImage(
                         this.hand.getImage(false),
@@ -453,6 +464,7 @@ export class Character extends Entity2D {
                 this.renderTexture(context, this.weapon, this.weaponScale);
 
                 context.scale(this.wobble.x, this.wobble.y);
+                context.scale(this.handsScale.x, this.handsScale.y);
 
                 context.drawImage(
                         this.hand.getImage(false),
@@ -493,6 +505,9 @@ export class Character extends Entity2D {
                 context.translate(shoulderOffset.x, shoulderOffset.y); // Origin is at shoulder
 
                 context.translate(freeHandX, freeHandY);
+
+                context.scale(this.wobble.x, this.wobble.y);
+                context.scale(this.handsScale.x, this.handsScale.y);
 
                 context.drawImage(
                         this.hand.getImage(false),

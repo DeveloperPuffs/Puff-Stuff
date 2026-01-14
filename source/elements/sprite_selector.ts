@@ -36,7 +36,7 @@ export class SpriteSelectorElement extends HTMLElement {
 
                 this.uploader = document.createElement("input");
                 this.uploader.type = "file";
-                this.uploader.accept = "image/*";
+                this.uploader.accept = "image/png, image/jpeg";
         }
 
         get sprite() {
@@ -105,14 +105,7 @@ export class SpriteSelectorElement extends HTMLElement {
                         };
 
                         const texture = new Texture(metadata);
-                        if (file.type === "image/svg+xml") {
-                                texture.loadSVG(await file.text());
-                        } else if (file.type.startsWith("image/")) {
-                                await texture.loadBitmap(file);
-                        } else {
-                                window.alert("Invalid image file.");
-                                return;
-                        }
+                        await texture.loadBitmap(file);
 
                         const image = texture.getImage(true);
                         image.addEventListener("click", () => {
@@ -200,8 +193,8 @@ export class SpriteSelectorElement extends HTMLElement {
                                         referenceInFront: true,
                                         referenceOffset: new Vector2D(0, reference.height * 1.5 * scale),
                                         offsetFromReference: Vector2D.zero(),
-                                        targetWidth: reference.width * 2,
-                                        targetHeight: reference.height * 5
+                                        targetWidth: reference.width,
+                                        targetHeight: reference.height * 2
                                 }
 
                                 break;
