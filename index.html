@@ -57,21 +57,27 @@
                                                                 <br>
                                                                 <br>
                                                                 <span class="secondary">Or generate a random character:</span>
-                                                                <button class="secondary" id="randomize">Randomize</button>
+                                                                <button class="secondary" id="randomize">Randomize <i class="fa-solid fa-dice"></i></button>
                                                         </div>
                                                 </div>
                                                 <div id="general-content" class="step">
                                                         <div class="title">General</div>
                                                         <div class="scroller">
                                                                 <labeled-element for="name-input" label="Name" inline-label margin="less">
-                                                                        <input
-                                                                                id="name-input"
-                                                                                type="text"
-                                                                                name="username"
-                                                                                autocomplete="username"
-                                                                                placeholder="PlasmaPuffs"
-                                                                                spellcheck="false"
-                                                                        >
+                                                                        <div style="display: flex; gap: var(--small-spacing)">
+                                                                                <input
+                                                                                        id="name-input"
+                                                                                        type="text"
+                                                                                        name="username"
+                                                                                        autocomplete="username"
+                                                                                        placeholder="Name"
+                                                                                        spellcheck="false"
+                                                                                        style="width: auto; min-width: 0; flex: 1"
+                                                                                >
+                                                                                <button id="randomize-name" data-tippy-content="Random Name">
+                                                                                        <i class="fa-solid fa-dice"></i>
+                                                                                </button>
+                                                                        </div>
                                                                 </labeled-element>
                                                                 <labeled-element for="pronouns-input" label="Pronouns" inline-label>
                                                                         <dropdown-element input-id="pronouns-input" value="Unspecified">
@@ -307,6 +313,7 @@
                                                                                 <li>Fonts: <a target="_blank" href="https://monaspace.githubnext.com/">Monaspace Fonts</a></li>
                                                                                 <li>Icons: <a target="_blank" href="https://fontawesome.com/">Font Awesome</a></li>
                                                                                 <li>Color Palette: <a target="_blank" href="https://lospec.com/palette-list/pico-8">Pico-8</a> from Lospec</li>
+                                                                                <li>Random Word List: <a target="_blank" href="https://github.com/first20hours/google-10000-english">google-10000-english</a></li>
                                                                         </ul>
                                                                         <br>
                                                                         Tools & Programs Used

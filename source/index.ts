@@ -77,6 +77,23 @@ const clickable: readonly string[] = Object.freeze([
         "INPUT", "BUTTON", "TEXTAREA", "CANVAS",
 ] as const);
 
+async function loadWords() {
+        const response = await fetch("google-10000-english-no-swears.txt");
+        if (!response.ok) {
+                throw new Error("Failed to load word list");
+        }
+
+        const text = await response.text();
+        const words = text
+                .split("\n")
+                .map(word => word.trim())
+                .filter(Boolean);
+
+        return words;
+}
+
+const words = await loadWords();
+
 window.addEventListener("click", event => {
         if (event.target === null) {
                 return;
@@ -97,6 +114,15 @@ window.addEventListener("click", event => {
         const pitch = 0.75 + Math.random() * 0.5;
         clickSound.rate(pitch);
         clickSound.play();
+});
+
+document.querySelector<HTMLButtonElement>("#randomize-name")!.addEventListener("click", () => {
+        const word = words[Math.floor(Math.random() * words.length)];
+        const nameInput = document.querySelector<HTMLInputElement>("#name-input")!;
+        const name = `${word.charAt(0).toUpperCase() + word.slice(1)}Puff`;
+        nameInput.value = name;
+
+        nameInput.dispatchEvent(new Event("input"));
 });
 
 enum Step {

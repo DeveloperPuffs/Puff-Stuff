@@ -87,4 +87,6 @@ function randomize() {
 
         const outlineColorPicker = document.querySelector<ColorPickerElement>("#outline-color-picker")!;
         outlineColorPicker.color = randomColor();
+
+        document.querySelector<HTMLButtonElement>("#randomize-name")!.click();
 }

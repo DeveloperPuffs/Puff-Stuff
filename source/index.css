@@ -57,6 +57,10 @@ input, textarea, select, button {
         color: inherit;
 }
 
+a {
+        color: var(--lightest-background-color);
+}
+
 #starfield {
         width: 100%;
         height: 100%;
